@@ -1,0 +1,4 @@
+/node_modules
+/database-uploader/node_modules
+/external-adapter-entry/node_modules
+/faas-sandbox/node_modules
