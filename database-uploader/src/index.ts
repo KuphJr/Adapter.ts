@@ -2,8 +2,6 @@ import { Request, Response } from 'express'
 
 import { log } from './logger'
 import { CachedDataValidator } from './CachedDataValidator'
-import type { ValidCachedData } from './CachedDataValidator'
-import { Encryptor } from './Encryptor'
 import { DataStorage } from './GoogleCloudStorage'
 
 export interface Result {
