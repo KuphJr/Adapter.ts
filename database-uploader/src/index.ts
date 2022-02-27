@@ -20,21 +20,9 @@ export const createRequest = async (
   callback: (status: number, result: Result) => void
 ) => {
   log("INPUT: " + JSON.stringify(input))
-  if (process.env.NODEKEY && input?.data?.nodeKey !== process.env.NODEKEY) {
-    callback(500,
-      {
-        status: 'errored',
-        statusCode: 500,
-        error: {
-          name: 'Setup Error',
-          message: 'Request does not contain a valid nodeKey.'
-        }
-      }
-    )
-    return
-  }
   // ensure the PUBLICKEY environmental variable has been set
   if (typeof process.env.PUBLICKEY !== 'string') {
+    log('SETUP ERROR: The PUBLICKEY environmental variable has not been set')
     callback(500,
       {
         status: 'errored',
@@ -53,6 +41,7 @@ export const createRequest = async (
     }
   } catch (untypedError) {
     const error = untypedError as Error
+    log(error)
     callback(500,
       {
         status: 'errored',
@@ -72,6 +61,7 @@ export const createRequest = async (
     await storage.storeData(input)
   } catch (untypedError) {
     const error = untypedError as Error
+    log(error)
     callback(500,
       {
         status: 'errored',
@@ -83,6 +73,7 @@ export const createRequest = async (
       })
     return
   }
+  log('SUCCESS')
   callback(200, {
     status: 'Success',
     statusCode: 200
@@ -111,7 +102,7 @@ exports.gcpservice = async (req: Request, res: Response ) => {
         res.status(statusCode).send(data)
       })
     } catch (error) {
-      console.log(error)
+      log('ERROR: ' + error)
     }
   }
 }

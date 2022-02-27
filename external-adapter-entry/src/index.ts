@@ -28,8 +28,8 @@ export const createRequest = async (
   input: any,
   callback: (status: number, result: Result) => void
 ) => {
-  log("INPUT: " + JSON.stringify(input))
   if (process.env.NODEKEY && input?.data?.nodeKey !== process.env.NODEKEY) {
+    log('SETUP ERROR: Request does not contain a valid nodeKey.')
     callback(500,
       {
         status: 'errored',
@@ -42,8 +42,10 @@ export const createRequest = async (
     )
     return
   }
+  log("INPUT: " + JSON.stringify(input))
   // ensure the PRIVATEKEY environmental variable has been set
   if (typeof process.env.PRIVATEKEY !== 'string') {
+    log('SETUP ERROR: The PRIVATEKEY environmental variable has not been set')
     callback(500,
       {
         status: 'errored',
@@ -61,6 +63,7 @@ export const createRequest = async (
     validatedInput = Validator.validateInput(input)
   } catch (untypedError) {
     const error = untypedError as Error
+    log(error)
     callback(500,
       {
         status: 'errored',
@@ -88,6 +91,7 @@ export const createRequest = async (
     }
   } catch (untypedError) {
     const error = untypedError as Error
+    log(error)
     callback(500,
       new AdapterError({
         jobRunID: validatedInput.id,
@@ -102,6 +106,7 @@ export const createRequest = async (
         .fetchJavaScriptString(validatedInput.cid)
     } catch (untypedError) {
       const error = untypedError as Error
+      log(error)
       callback(500,
         new AdapterError({
           jobRunID: validatedInput.id,
@@ -120,6 +125,7 @@ export const createRequest = async (
     }
   }
   if (!javascriptString) {
+    log(Error('No JavaScript code could be found for the request.'))
     callback(500,
       new AdapterError({
         jobRunID: validatedInput.id,
@@ -134,6 +140,7 @@ export const createRequest = async (
   } catch (untypedError) {
     if ((untypedError as JavaScriptError).name === 'JavaScript Error') {
       const error = untypedError as JavaScriptError
+      log(error)
       callback(500,
         new JavaScriptError({
           jobRunID: validatedInput.id,
@@ -144,6 +151,7 @@ export const createRequest = async (
       )
     } else {
       const error = untypedError as Error
+      log(error)
       callback(500,
         new AdapterError({
           jobRunID: validatedInput.id,
@@ -153,6 +161,7 @@ export const createRequest = async (
     }
     return
   }
+  log(`SUCCESS: jobRunId: ${validatedInput.id} result: ${result}`)
   callback(200, {
     jobRunId: validatedInput.id,
     result: result,
