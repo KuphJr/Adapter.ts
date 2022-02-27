@@ -1,22 +1,26 @@
 {
   "name": "external-adapter-entry",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.2.1",
+  "description": "This is the component of Adapter.js which is run locally on the Chainlink node.  It handles fetching and decrypting any cached user data or data stored on IPFS.  It then sends a request to the 'faas-sandbox' component where the code in the request is securely executed.  When the faas-sandbox returns a value, this component also verifies the type of the returned value.",
   "main": "index.js",
   "scripts": {
-    "start": "tsc && node ./dist/app.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "author": "KuphJr",
   "license": "ISC",
   "dependencies": {
-    "@google-cloud/storage": "^5.18.0",
+    "@google-cloud/storage": "^5.18.2",
+    "crypto-js": "^4.1.1"
+  },
+  "devDependencies": {
     "@types/body-parser": "^1.19.2",
     "@types/cors": "^2.8.12",
+    "@types/crypto-js": "^4.1.1",
     "@types/express": "^4.17.13",
-    "body-parser": "^1.19.1",
-    "dotenv": "^14.2.0",
-    "express": "^4.17.2",
-    "tsc": "^2.0.4"
+    "body-parser": "^1.19.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3",
+    "typescript": "^4.5.5"
   }
 }

@@ -1,0 +1,25 @@
+{
+  "name": "faas-sandbox",
+  "version": "0.2.1",
+  "description": "This is the component of Adapter.js which executes untrusted Node.js code using a sandboxed environment and sends back the returned value.  It is designed to run on a FaaS provider such as Google Cloud Functions, AWS Lambda or Azure Functions.  Even in the event that malicious code breaches the sandboxed environment, since the code is executed in an isolated FaaS container there is additional security risk.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "KuphJr",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/body-parser": "^1.19.2",
+    "@types/cors": "^2.8.12",
+    "@types/express": "^4.17.13",
+    "body-parser": "^1.19.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3"
+  },
+  "dependencies": {
+    "axios": "^0.26.0",
+    "crypto": "^1.0.1",
+    "vm2": "^3.9.9"
+  }
+}

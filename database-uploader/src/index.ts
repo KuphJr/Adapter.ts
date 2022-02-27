@@ -15,33 +15,70 @@ export interface Result {
   }
 }
 
-export interface Error {
-  message: string
-}
-
 export const createRequest = async (
   input: any,
   callback: (status: number, result: Result) => void
 ) => {
   log("INPUT: " + JSON.stringify(input))
   // ensure the PUBLICKEY environmental variable has been set
-  if (typeof process.env.PRIVATEKEY !== 'string') {
+  if (typeof process.env.PUBLICKEY !== 'string') {
     callback(500,
       {
         status: 'errored',
         statusCode: 500,
         error: {
           name: 'Setup Error',
-          message: 'The PRIVATEKEY environmental variable has not been set'
+          message: 'The PUBLICKEY environmental variable has not been set'
         }
       }
     )
     return
   }
+  let validInput: ValidCachedData
+  try {
+    if (CachedDataValidator.isValidCachedData(input)) {
+      validInput = input
+    } else {
+      throw Error('Input is invalid.')
+    }
+  } catch (untypedError) {
+    const error = untypedError as Error
+    callback(500,
+      {
+        status: 'errored',
+        statusCode: 500,
+        error: {
+          name: 'Validation Error',
+          message: 'Error validating input: ' + error.message
+        }
+      }
+    )
+    return
+  }
+  // Future Plans: Use a a smart contract to see if the requester paid a set amount
+  // of LINK required to store cached data in the external adapter's database.
+  const encryptedObj = Encryptor.encrypt(process.env.PUBLICKEY, validInput)
+  const storage = new DataStorage();
+  try {
+    await storage.storeData(validInput.contractAddress, validInput.ref, encryptedObj)
+  } catch (untypedError) {
+    const error = untypedError as Error
+    callback(500,
+      {
+        status: 'errored',
+        statusCode: 500,
+        error: {
+          name: 'Data Storage Error',
+          message: error.message
+        }
+      })
+    return
+  }
+  callback(200, {
+    status: 'Success',
+    statusCode: 200
+  })
 }
-
-// Export for testing with express
-module.exports.createRequest = createRequest
 
 // Export for GCP Functions deployment
 exports.gcpservice = async (req: Request, res: Response ) => {

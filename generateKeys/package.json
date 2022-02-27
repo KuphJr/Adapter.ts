@@ -1,0 +1,15 @@
+{
+  "name": "generatekeys",
+  "version": "0.2.1",
+  "description": "This is a tool used to generate public and private encryption keys which are then saved to a '.env' file in the root directory.",
+  "main": "generateKeys.js",
+  "scripts": {
+    "generateKeys": "tsc && node generateKeys.js"
+  },
+  "author": "KuphJr",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^17.0.21",
+    "crypto": "^1.0.1"
+  }
+}

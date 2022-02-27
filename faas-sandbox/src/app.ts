@@ -9,7 +9,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 
 import { createRequest, Result } from './index'
-import { log } from './logger'
+import { log } from '../../lib/logger'
 
 // load environmental variables from .env file
 dotenv.config({ path: path.join(__dirname, '..', '.env')})
@@ -37,7 +37,7 @@ app.post('/', async (req: express.Request, res: express.Response) => {
   }
   log('Input: ' + req.body)
   try {
-    await createRequest(req.body, (status: number, result: Result) => {
+    await createRequest(req.body, (status: number, result: Result): void => {
       log('Result: ' + result)
       res.status(status).json(result)
     })
