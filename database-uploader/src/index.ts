@@ -20,6 +20,19 @@ export const createRequest = async (
   callback: (status: number, result: Result) => void
 ) => {
   log("INPUT: " + JSON.stringify(input))
+  if (process.env.NODEKEY && input?.data?.nodeKey !== process.env.NODEKEY) {
+    callback(500,
+      {
+        status: 'errored',
+        statusCode: 500,
+        error: {
+          name: 'Setup Error',
+          message: 'Request does not contain a valid nodeKey.'
+        }
+      }
+    )
+    return
+  }
   // ensure the PUBLICKEY environmental variable has been set
   if (typeof process.env.PUBLICKEY !== 'string') {
     callback(500,
@@ -34,11 +47,8 @@ export const createRequest = async (
     )
     return
   }
-  let validInput: ValidCachedData
   try {
-    if (CachedDataValidator.isValidCachedData(input)) {
-      validInput = input
-    } else {
+    if (!CachedDataValidator.isValidCachedData(input)) {
       throw Error('Input is invalid.')
     }
   } catch (untypedError) {
@@ -57,10 +67,9 @@ export const createRequest = async (
   }
   // Future Plans: Use a a smart contract to see if the requester paid a set amount
   // of LINK required to store cached data in the external adapter's database.
-  const encryptedObj = Encryptor.encrypt(process.env.PUBLICKEY, validInput)
-  const storage = new DataStorage();
+  const storage = new DataStorage({ publicKey: process.env.PUBLICKEY });
   try {
-    await storage.storeData(validInput.contractAddress, validInput.ref, encryptedObj)
+    await storage.storeData(input)
   } catch (untypedError) {
     const error = untypedError as Error
     callback(500,

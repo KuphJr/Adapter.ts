@@ -2,7 +2,7 @@ import { Validator } from './Validator'
 import type { ValidOutput } from './Validator'
 import { JavaScriptError } from './Errors'
 import { Sandbox } from './Sandbox'
-import { log } from '../../lib/logger'
+import { log } from './logger'
 import type { Request } from 'express'
 
 export interface Result {

@@ -48,9 +48,6 @@ export class Validator {
 }
 
 const isVariables = (variables: unknown): variables is Variables => {
-  if (!variables) {
-    return false
-  }
   for (const variable of Object.keys(variables as Variables)) {
     if (typeof variable !== 'string') return false
   }
