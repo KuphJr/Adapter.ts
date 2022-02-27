@@ -14,21 +14,10 @@ const logger_1 = require("./logger");
 const CachedDataValidator_1 = require("./CachedDataValidator");
 const GoogleCloudStorage_1 = require("./GoogleCloudStorage");
 const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     (0, logger_1.log)("INPUT: " + JSON.stringify(input));
-    if (process.env.NODEKEY && ((_a = input === null || input === void 0 ? void 0 : input.data) === null || _a === void 0 ? void 0 : _a.nodeKey) !== process.env.NODEKEY) {
-        callback(500, {
-            status: 'errored',
-            statusCode: 500,
-            error: {
-                name: 'Setup Error',
-                message: 'Request does not contain a valid nodeKey.'
-            }
-        });
-        return;
-    }
     // ensure the PUBLICKEY environmental variable has been set
     if (typeof process.env.PUBLICKEY !== 'string') {
+        (0, logger_1.log)('SETUP ERROR: The PUBLICKEY environmental variable has not been set');
         callback(500, {
             status: 'errored',
             statusCode: 500,
@@ -46,6 +35,7 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
     }
     catch (untypedError) {
         const error = untypedError;
+        (0, logger_1.log)(error);
         callback(500, {
             status: 'errored',
             statusCode: 500,
@@ -64,6 +54,7 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
     }
     catch (untypedError) {
         const error = untypedError;
+        (0, logger_1.log)(error);
         callback(500, {
             status: 'errored',
             statusCode: 500,
@@ -74,6 +65,7 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
         });
         return;
     }
+    (0, logger_1.log)('SUCCESS');
     callback(200, {
         status: 'Success',
         statusCode: 200
@@ -103,7 +95,7 @@ exports.gcpservice = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             });
         }
         catch (error) {
-            console.log(error);
+            (0, logger_1.log)('ERROR: ' + error);
         }
     }
 });

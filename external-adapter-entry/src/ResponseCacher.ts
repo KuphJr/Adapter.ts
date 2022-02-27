@@ -1,7 +1,7 @@
 import path from 'path'
 import os from 'os'
 import fs from 'fs'
-import { md5 } from 'hash-wasm'
+import { SHA256 } from 'crypto-js'
 
 import { log } from './logger'
 import { Validator } from './Validator'
@@ -28,7 +28,8 @@ export class ResponseCacher {
   getCachedResult(input: any): Result {
     log('GetCachedResult INPUT: ' + JSON.stringify(input))
     const validatedInput = Validator.validateInput(input)
-    const filename = md5(JSON.stringify(validatedInput)) + '.json'
+    // Use the hash of the validated input from the request as the file name.
+    const filename = SHA256(JSON.stringify(validatedInput)) + '.json'
     try {
       if (fs.existsSync(path.join(this.ramStorageDir, filename))) {
         // If the cached result exists in RAM storage, use that.
@@ -57,8 +58,11 @@ export class ResponseCacher {
             UTCtime: new Date().toUTCString(),
             result
           })
+          log('FILLING CACHE: ' + cachedResultString)
           fs.writeFileSync(path.join(this.ramStorageDir, filename), cachedResultString)
           fs.writeFileSync(path.join(this.persistantStorageDir, filename), cachedResultString)
+        } else {
+          log('ERROR FILLING CACHE: ' + JSON.stringify(result))
         }
       })
     }

@@ -15,8 +15,9 @@ export class Validator {
       throw new Error("The parameter 'js' must be provided as a string.")
     }
     if (
-      Array.isArray((input as ValidRequest).vars)
-      || !isVariables((input as ValidRequest).vars)
+      (input as ValidRequest).vars &&
+      (Array.isArray((input as ValidRequest).vars)
+      || !isVariables((input as ValidRequest).vars))
     ) {
       throw new Error("The parameter 'vars' must be provided as a JavaScript object and cannot be an array.")
     }

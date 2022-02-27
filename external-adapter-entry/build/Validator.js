@@ -6,13 +6,11 @@ class Validator {
     constructor() { }
     static validateInput(input) {
         var _a, _b;
-        // if a node key has been set in the environment variables, require
-        // all requests to have a matching node key sent from the jobspec.
         const validatedInput = {};
-        if (!(input === null || input === void 0 ? void 0 : input.data)) {
+        if (!input.data) {
             throw Error('No data input provided.');
         }
-        if (typeof (input === null || input === void 0 ? void 0 : input.data.type) !== 'string') {
+        if (typeof input.data.type !== 'string') {
             throw Error("The parameter 'type' must be provided as a string.");
         }
         switch (input.data.type) {

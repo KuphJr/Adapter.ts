@@ -17,9 +17,8 @@ const IpfsFetcher_1 = require("./IpfsFetcher");
 const Errors_1 = require("./Errors");
 const Sandbox_1 = require("./Sandbox");
 const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    (0, logger_1.log)("INPUT: " + JSON.stringify(input));
-    if (process.env.NODEKEY && ((_a = input === null || input === void 0 ? void 0 : input.data) === null || _a === void 0 ? void 0 : _a.nodeKey) !== process.env.NODEKEY) {
+    if (process.env.NODEKEY && input.nodeKey !== process.env.NODEKEY) {
+        (0, logger_1.log)('SETUP ERROR: Request does not contain a valid nodeKey.');
         callback(500, {
             status: 'errored',
             statusCode: 500,
@@ -30,8 +29,10 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
         });
         return;
     }
+    (0, logger_1.log)("INPUT: " + JSON.stringify(input));
     // ensure the PRIVATEKEY environmental variable has been set
     if (typeof process.env.PRIVATEKEY !== 'string') {
+        (0, logger_1.log)('SETUP ERROR: The PRIVATEKEY environmental variable has not been set');
         callback(500, {
             status: 'errored',
             statusCode: 500,
@@ -48,6 +49,7 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
     }
     catch (untypedError) {
         const error = untypedError;
+        (0, logger_1.log)(error);
         callback(500, {
             status: 'errored',
             statusCode: 500,
@@ -76,6 +78,7 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
     }
     catch (untypedError) {
         const error = untypedError;
+        (0, logger_1.log)(error);
         callback(500, new Errors_1.AdapterError({
             jobRunID: validatedInput.id,
             message: `Storage Error: ${error.message}`
@@ -89,6 +92,7 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
         }
         catch (untypedError) {
             const error = untypedError;
+            (0, logger_1.log)(error);
             callback(500, new Errors_1.AdapterError({
                 jobRunID: validatedInput.id,
                 message: `IPFS Error: ${error.message}`
@@ -106,6 +110,7 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
         }
     }
     if (!javascriptString) {
+        (0, logger_1.log)(Error('No JavaScript code could be found for the request.'));
         callback(500, new Errors_1.AdapterError({
             jobRunID: validatedInput.id,
             message: `No JavaScript code could be found for the request.`
@@ -119,6 +124,7 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
     catch (untypedError) {
         if (untypedError.name === 'JavaScript Error') {
             const error = untypedError;
+            (0, logger_1.log)(error);
             callback(500, new Errors_1.JavaScriptError({
                 jobRunID: validatedInput.id,
                 name: error.name,
@@ -128,6 +134,7 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
         }
         else {
             const error = untypedError;
+            (0, logger_1.log)(error);
             callback(500, new Errors_1.AdapterError({
                 jobRunID: validatedInput.id,
                 message: error.message
@@ -135,6 +142,7 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
         }
         return;
     }
+    (0, logger_1.log)(`SUCCESS: jobRunId: ${validatedInput.id} result: ${result}`);
     callback(200, {
         jobRunId: validatedInput.id,
         result: result,

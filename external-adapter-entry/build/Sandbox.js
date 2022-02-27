@@ -25,10 +25,14 @@ class Sandbox {
                 throw new Error('SANDBOXURL was not provided in environement variables.');
             }
             try {
+                console.log('Making axios request');
+                console.log(sandboxUrl);
                 const { data } = yield axios_1.default.post(sandboxUrl, {
                     js: javascriptString,
                     vars: vars
                 });
+                console.log('axios response');
+                console.log(data);
                 const result = data.result;
                 if (Validator_1.Validator.validateOutput(type, result))
                     return result;
@@ -36,6 +40,7 @@ class Sandbox {
                     throw new Error('Invalid Output');
             }
             catch (error) {
+                console.log(error);
                 if ((_b = (_a = error === null || error === void 0 ? void 0 : error.response) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.error) {
                     throw error.response.data.error;
                 }

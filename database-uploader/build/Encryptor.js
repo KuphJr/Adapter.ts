@@ -7,9 +7,8 @@ const CachedDataValidator_1 = require("./CachedDataValidator");
 class Encryptor {
     static encrypt(publicKey, validatedInput) {
         const userDataJsonString = Buffer.from(JSON.stringify(validatedInput));
-        const decryptionKey = (0, crypto_1.randomBytes)(10);
+        const decryptionKey = (0, crypto_1.randomBytes)(64);
         const encryptedDecryptionKey = (0, crypto_1.publicEncrypt)(publicKey, decryptionKey).toString('base64');
-        console.log('LENGTH: ' + encryptedDecryptionKey.length);
         const encryptedUserDataJsonString = crypto_js_1.AES.encrypt(JSON.stringify(validatedInput), decryptionKey.toString() + validatedInput.contractAddress + validatedInput.ref).toString();
         return {
             encryptedDecryptionKey: encryptedDecryptionKey,

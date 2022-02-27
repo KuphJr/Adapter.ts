@@ -38,7 +38,7 @@ export class Sandbox {
     let result: unknown
     try {
       sandboxedFunction = await vm.run(functionScript)
-      result = await sandboxedFunction
+      result = await sandboxedFunction()
     } catch (untypedError) {
       const error = untypedError as Error
       throw new JavaScriptRuntimeError({

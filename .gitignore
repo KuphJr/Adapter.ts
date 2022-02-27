@@ -1,4 +1,6 @@
 /database-uploader/node_modules
 /external-adapter-entry/node_modules
 /faas-sandbox/node_modules
+/database-uploader/key.json
+/external-adapter-entry/key.json
 .env

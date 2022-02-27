@@ -12,9 +12,7 @@ import { createRequest, Result } from './index'
 import { log } from './logger'
 
 // load environmental variables from .env file
-dotenv.config({ path: path.join(__dirname, '..', '.env')})
-
-console.log(process.env)
+dotenv.config({ path: path.join(__dirname, '..', '..', '.env')})
 
 const app = express()
 const port = process.env.EA_PORT || 8030
