@@ -4,6 +4,7 @@ export class AdapterError extends Error {
   public statusCode
   public name
   public message
+  details?: string | undefined
 
   constructor ({
     jobRunID = '1',
@@ -32,12 +33,30 @@ export class AdapterError extends Error {
   }
 }
 
-class JavaScriptError extends AdapterError {
-  constructor (public details: string, adapterErrorObject: any) {
-    super(adapterErrorObject)
+export class JavaScriptError {
+  jobRunID: string
+  status: string
+  statusCode: number
+  name: string
+  message: string
+  details: string
 
+  constructor ({
+    jobRunID = '1',
+    status = 'errored',
+    statusCode = 500,
+    name = 'JavaScript Error',
+    message = 'An error occurred',
+    details = ''
+  }) {
+    this.jobRunID = jobRunID
+    this.status = status
+    this.statusCode = statusCode
+    this.name = name
+    this.message = message
     this.details = details
   }
+
   toJSONResponse () {
     return {
       jobRunID: this.jobRunID,

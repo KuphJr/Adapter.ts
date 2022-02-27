@@ -9,7 +9,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 
 import { createRequest, Result } from './index'
-import { log } from '../../lib/logger'
+import { log } from './logger'
 
 // load environmental variables from .env file
 dotenv.config({ path: path.join(__dirname, '..', '.env')})

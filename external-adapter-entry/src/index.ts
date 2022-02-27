@@ -6,7 +6,7 @@ import { Validator } from './Validator'
 import type { ValidInput, ValidOutput, Variables } from './Validator'
 import { DataStorage } from './GoogleCloudStorage'
 import { IpfsFetcher } from './IpfsFetcher'
-import { AdapterError } from './Errors'
+import { AdapterError, JavaScriptError } from './Errors'
 import { Sandbox } from './Sandbox'
 
 export interface Result {
@@ -128,7 +128,31 @@ export const createRequest = async (
     )
     return
   }
-  const result = await Sandbox.evaluate(validatedInput.type, javascriptString, vars)
+  let result: ValidOutput
+  try {
+    result = await Sandbox.evaluate(validatedInput.type, javascriptString, vars)
+  } catch (untypedError) {
+    if ((untypedError as JavaScriptError).name === 'JavaScript Error') {
+      const error = untypedError as JavaScriptError
+      callback(500,
+        new JavaScriptError({
+          jobRunID: validatedInput.id,
+          name: error.name,
+          message: error.message,
+          details: error.details
+        }).toJSONResponse()
+      )
+    } else {
+      const error = untypedError as Error
+      callback(500,
+        new AdapterError({
+          jobRunID: validatedInput.id,
+          message: error.message
+        }).toJSONResponse()
+      )
+    }
+    return
+  }
   callback(200, {
     jobRunId: validatedInput.id,
     result: result,

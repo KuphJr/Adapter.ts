@@ -8,7 +8,7 @@ export abstract class JavaScriptError {
   constructor ({
     status = 'errored',
     statusCode = 500,
-    name = 'JavaScript Compilation Error',
+    name = 'JavaScript Error',
     message = 'An error occurred',
     details = ''
   }, errorName: string) {
@@ -29,18 +29,18 @@ export abstract class JavaScriptError {
 }
 
 export class JavaScriptCompilationError extends JavaScriptError  {
-  constructor (errorParams: ErrorParams) {
+  constructor (errorParams: JavaScriptErrorParams) {
     super(errorParams, 'JavaScript Compilation Error')
   }
 }
 
 export class JavaScriptRuntimeError extends JavaScriptError {
-  constructor (errorParams: ErrorParams) {
+  constructor (errorParams: JavaScriptErrorParams) {
     super(errorParams, 'JavaScript Runtime Error')
   }
 }
 
-interface ErrorParams {
+interface JavaScriptErrorParams {
   name: string
   message: string
   details?: string
