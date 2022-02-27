@@ -28,7 +28,7 @@ export const createRequest = async (
   input: any,
   callback: (status: number, result: Result) => void
 ) => {
-  if (process.env.NODEKEY && input?.data?.nodeKey !== process.env.NODEKEY) {
+  if (process.env.NODEKEY && input.nodeKey !== process.env.NODEKEY) {
     log('SETUP ERROR: Request does not contain a valid nodeKey.')
     callback(500,
       {

@@ -1,5 +1,3 @@
-// This file is only used for testing purposes when running the external adapter locally.
-// When this code is deployed to a FaaS provider, this file will no longer be used.
 import process from 'process'
 import path from 'path'
 
@@ -10,6 +8,9 @@ import dotenv from 'dotenv'
 
 import { createRequest, Result } from './index'
 import { log } from './logger'
+import { ResponseCacher } from './ResponseCacher'
+
+const responseCacher = new ResponseCacher()
 
 // load environmental variables from .env file
 dotenv.config({ path: path.join(__dirname, '..', '..', '.env')})
@@ -29,17 +30,36 @@ app.options('*', (req, res) => {
 app.use(bodyParser.json())
 
 app.post('/', async (req: express.Request, res: express.Response) => {
-  // Take any data provided in the URL as a query and put that data into the request body.
-  for (const key in req.query) {
-    req.body[key] = req.query[key]
-  }
-  try {
-    await createRequest(req.body, (status: number, result: Result) => {
-      log('RESULT: ' + JSON.stringify(result))
-      res.status(status).json(result)
-    })
-  } catch (error) {
-    log(error)
+  // respond to CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    res.set('Access-Control-Allow-Methods', 'GET')
+    res.set('Access-Control-Allow-Headers', 'Content-Type')
+    res.set('Access-Control-Max-Age', '3600')
+    res.status(204).send('')
+  } else {
+    // Take any data provided in the URL as a query and put that data into the request body.
+    for (const key in req.query) {
+      req.body[key] = req.query[key]
+    }
+    if (req.body?.data?.cached) {
+      // CachedResponse.getCachedResponse() will return the response to the
+      // last identical Adapter.js request.  It will then create a new Adapter.js
+      // request to refresh the cash.
+      try {
+        const cachedResult = responseCacher.getCachedResult(req.body)
+        res.status(cachedResult.statusCode).json(cachedResult.result)
+      } catch (error) {
+        res.status(500).json(error)
+      }
+    } else {
+      try {
+        await createRequest(req.body, (status: number, result: Result) => {
+          res.status(status).json(result)
+        })
+      } catch (error) {
+        log(error)
+      }
+    }
   }
 })
 

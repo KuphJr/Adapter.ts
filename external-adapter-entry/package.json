@@ -12,6 +12,7 @@
     "@google-cloud/storage": "^5.18.2",
     "axios": "^0.26.0",
     "crypto-js": "^4.1.1",
+    "hash-wasm": "^4.9.0",
     "web3.storage": "^3.5.5"
   },
   "devDependencies": {
