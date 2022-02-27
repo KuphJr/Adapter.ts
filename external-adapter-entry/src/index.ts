@@ -42,7 +42,7 @@ export const createRequest = async (
     )
     return
   }
-  // ensure the PUBLICKEY environmental variable has been set
+  // ensure the PRIVATEKEY environmental variable has been set
   if (typeof process.env.PRIVATEKEY !== 'string') {
     callback(500,
       {
@@ -183,7 +183,7 @@ exports.gcpservice = async (req: Request, res: Response ) => {
         res.status(statusCode).send(data)
       })
     } catch (error) {
-      console.log(error)
+      log(error)
     }
   }
 }

@@ -19,7 +19,7 @@ export class DataStorage {
     publicKey = '',
     privateKey = '',
     keyFileName = 'key.json',
-    bucketName = 'adapterjs-database'
+    bucketName = 'cached-data'
   }) {
       this.publicKey = publicKey
       this.privateKey = privateKey
@@ -40,8 +40,7 @@ export class DataStorage {
         `Reference ID ${input.ref} is already in use for contract ${input.contractAddress}.`
       )
     }
-    const objectString = JSON.stringify(input)
-    await file.save(objectString)
+    await file.save(JSON.stringify(encryptedObj))
   }
 
   async retrieveData(contractAddress: string, ref: string): Promise<ValidCachedData> {

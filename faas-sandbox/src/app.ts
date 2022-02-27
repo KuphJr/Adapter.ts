@@ -17,7 +17,7 @@ dotenv.config({ path: path.join(__dirname, '..', '.env')})
 console.log(process.env)
 
 const app = express()
-const port = process.env.EA_PORT || 8081
+const port = process.env.EA_PORT || 8030
 
 app.use(cors())
 
@@ -38,7 +38,7 @@ app.post('/', async (req: express.Request, res: express.Response) => {
   log('Input: ' + req.body)
   try {
     await createRequest(req.body, (status: number, result: Result): void => {
-      log('Result: ' + result)
+      log('Result: ' + JSON.stringify(result))
       res.status(status).json(result)
     })
   } catch (error) {

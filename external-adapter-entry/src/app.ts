@@ -12,12 +12,10 @@ import { createRequest, Result } from './index'
 import { log } from './logger'
 
 // load environmental variables from .env file
-dotenv.config({ path: path.join(__dirname, '..', '.env')})
-
-console.log(process.env)
+dotenv.config({ path: path.join(__dirname, '..', '..', '.env')})
 
 const app = express()
-const port = process.env.EA_PORT || 8081
+const port = process.env.EA_PORT || 8032
 
 app.use(cors())
 
@@ -35,10 +33,9 @@ app.post('/', async (req: express.Request, res: express.Response) => {
   for (const key in req.query) {
     req.body[key] = req.query[key]
   }
-  log('Input: ' + req.body)
   try {
     await createRequest(req.body, (status: number, result: Result) => {
-      log('Result: ' + result)
+      log('RESULT: ' + JSON.stringify(result))
       res.status(status).json(result)
     })
   } catch (error) {

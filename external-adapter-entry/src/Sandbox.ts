@@ -4,15 +4,13 @@ import process from 'process'
 import { Validator, ValidOutput } from './Validator'
 import type { Variables } from './Validator'
 
-// @TODO: Change the variable below to match the URL of the 'faas-sandbox' deployment
-const sandboxUrl = process.env.SANDBOXURL
-
 export class Sandbox {
   static async evaluate (
     type: string,
     javascriptString: string,
     vars: Variables
   ): Promise<ValidOutput> {
+    const sandboxUrl = process.env.SANDBOXURL
     if (!sandboxUrl) {
       throw new Error('SANDBOXURL was not provided in environement variables.')
     }

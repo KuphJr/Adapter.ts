@@ -4,14 +4,15 @@
   "description": "This is the component of Adapter.js which is run locally on the Chainlink node.  It handles fetching and decrypting any cached user data or data stored on IPFS.  It then sends a request to the 'faas-sandbox' component where the code in the request is securely executed.  When the faas-sandbox returns a value, this component also verifies the type of the returned value.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "tsc && node ./build/app.js"
   },
   "author": "KuphJr",
   "license": "ISC",
   "dependencies": {
     "@google-cloud/storage": "^5.18.2",
     "axios": "^0.26.0",
-    "crypto-js": "^4.1.1"
+    "crypto-js": "^4.1.1",
+    "web3.storage": "^3.5.5"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.2",
