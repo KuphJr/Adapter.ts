@@ -30,32 +30,41 @@ export class ResponseCacher {
     const validatedInput = Validator.validateInput(input)
     // Use the hash of the validated input from the request as the file name.
     const filename = SHA256(JSON.stringify(validatedInput)) + '.json'
+    let cachedResultJSONstring: string
     try {
       if (fs.existsSync(path.join(this.ramStorageDir, filename))) {
         // If the cached result exists in RAM storage, use that.
-        const cachedResult = JSON.parse(
-          fs.readFileSync(path.join(this.ramStorageDir, filename), {encoding: 'utf8'})
+        cachedResultJSONstring = fs.readFileSync(
+          path.join(this.ramStorageDir, filename), {encoding: 'utf8'}
         )
-        if (Validator.isValidOutput(cachedResult.result)) return cachedResult.result
-        throw new Error('The cached result is invalid.')
       } else if (fs.existsSync(path.join(this.persistantStorageDir, filename))) {
         // If the cached result exists in persistant storage, use that.
-        const cachedResult = JSON.parse(
-          fs.readFileSync(path.join(this.persistantStorageDir, filename), {encoding: 'utf8'})
+        cachedResultJSONstring = fs.readFileSync(
+          path.join(this.persistantStorageDir, filename), {encoding: 'utf8'}
         )
-        if (Validator.isValidOutput(cachedResult.result)) return cachedResult.result
-        throw new Error('The cached result is invalid.')
       } else {
         // If no cached result has been found, throw an error.
-        throw new Error('No current data for that request.  The cache is now waiting to be filled.')
+        throw new Error('No current data for that request. The cache is now waiting to be filled.')
       }
+      const cachedResult = JSON.parse(cachedResultJSONstring)
+      if (Validator.isValidOutput(cachedResult.result)) {
+        // If a time-to-live (ttl) is specified, only return
+        // the cached data if it is younger than the ttl.
+        if (!input?.ttl ||
+            (input?.ttl && (Date.now() - cachedResult.POSIXtime) < input.ttl)) {
+          return cachedResult.result
+        } else {
+          throw new Error('The cached data is older than the ttl.')
+        }
+      }
+      throw new Error('The cached result is invalid.')
     } finally {
       // Make a new Adapter.js request to refresh the cache.
       createRequest(input, (status: number, result: Result) => {
         if (status === 200) {
           const cachedResultString = JSON.stringify({
             // Record the time the cache was last filled
-            UTCtime: new Date().toUTCString(),
+            POSIXtime: Date.now(),
             result
           })
           log('FILLING CACHE: ' + cachedResultString)

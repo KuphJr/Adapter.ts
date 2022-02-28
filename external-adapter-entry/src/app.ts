@@ -10,10 +10,10 @@ import { createRequest, Result } from './index'
 import { log } from './logger'
 import { ResponseCacher } from './ResponseCacher'
 
-const responseCacher = new ResponseCacher()
-
 // load environmental variables from .env file
 dotenv.config({ path: path.join(__dirname, '..', '..', '.env')})
+
+const responseCacher = new ResponseCacher()
 
 const app = express()
 const port = process.env.EA_PORT || 8032
@@ -44,7 +44,7 @@ app.post('/', async (req: express.Request, res: express.Response) => {
     if (req.body?.data?.cached) {
       // CachedResponse.getCachedResponse() will return the response to the
       // last identical Adapter.js request.  It will then create a new Adapter.js
-      // request to refresh the cash.
+      // request to refresh the cache.
       try {
         const cachedResult = responseCacher.getCachedResult(req.body)
         res.status(cachedResult.statusCode).json(cachedResult.result)
