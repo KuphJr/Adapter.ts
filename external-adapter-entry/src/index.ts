@@ -28,20 +28,6 @@ export const createRequest = async (
   input: any,
   callback: (status: number, result: Result) => void
 ) => {
-  if (process.env.NODEKEY && input.nodeKey !== process.env.NODEKEY) {
-    log('SETUP ERROR: Request does not contain a valid nodeKey.')
-    callback(500,
-      {
-        status: 'errored',
-        statusCode: 500,
-        error: {
-          name: 'Setup Error',
-          message: 'Request does not contain a valid nodeKey.'
-        }
-      }
-    )
-    return
-  }
   log("INPUT: " + JSON.stringify(input))
   // ensure the PRIVATEKEY environmental variable has been set
   if (typeof process.env.PRIVATEKEY !== 'string') {

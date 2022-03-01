@@ -8,6 +8,8 @@ export interface ValidInput {
   vars?: Variables
   ref?: string
   contractAddress?: string
+  cached?: boolean
+  ttl?: number
 }
 
 export interface Variables {
@@ -49,22 +51,22 @@ export class Validator {
         "'bool', 'uint', 'uint256', 'int', 'int256', 'bytes32', 'string' or 'bytes'.")
     }
     validatedInput.type = input.data.type
-    if (typeof input.id === 'undefined') {
+    if (!input.id) {
       input.id = '1'
     } else if (typeof input.id !== 'string') {
       throw Error("Invalid value for the parameter 'id' which must be a string.")
     }
     validatedInput.id = input.id
-    if (typeof input.data.js !== 'undefined' && typeof input.data.js !== 'string') {
+    if (input.data.js && typeof input.data.js !== 'string') {
       throw Error("Invalid value for the parameter 'js' which must be a string.")
     }
     if (typeof input.data.js === 'string') {
       validatedInput.js = input.data.js
     }
-    if (typeof input.data.cid !== 'undefined' && typeof input.data.cid !== 'string') {
+    if (input.data.cid && typeof input.data.cid !== 'string') {
       throw Error("Invalid value for the parameter 'cid' which must be a string.")
     }
-    if (typeof input.data.cid !== 'undefined' && typeof input.data.js !== 'undefined') {
+    if (input.data.cid && typeof input.data.js !== 'undefined') {
       throw Error("Both of the parameter 'js' or 'cid' cannot be provided simultaneously.")
     }
     if (typeof input.data.cid === 'string') {
@@ -77,13 +79,13 @@ export class Validator {
         throw Error("The parameter 'vars' was not a valid JSON object string.")
       }
     }
-    if (typeof input.data.vars !== 'undefined' && typeof input.data.vars !== 'object') {
+    if (input.data.vars && typeof input.data.vars !== 'object') {
       throw Error("Invalid value for the parameter 'vars' which must be a JavaScript object or a string.")
     }
     if (input.data.vars) {
       validatedInput.vars = input.data.vars
     }
-    if (typeof input.data.ref !== 'undefined') {
+    if (input.data.ref) {
       if (typeof input.data.ref !== 'string') {
         throw Error("Invalid value for the parameter 'ref' which must be a string")
       }
@@ -92,6 +94,22 @@ export class Validator {
         throw Error("Invalid value for the parameter 'contractAddress' which must be a string.")
       }
       validatedInput.contractAddress = input.meta.oracleRequest.requester
+    }
+    if (input.data.cached) {
+      if (typeof input.data.cached !== 'boolean') {
+        throw Error("Invalid value for the parameter 'cached' which must be a boolean.")
+      }
+      validatedInput.cached = input.data.cached
+    } else {
+      if (input.data.ttl) {
+        throw Error("The 'ttl' parameter should not be provided if the 'cached' parameter is not provided.")
+      }
+    }
+    if (input.data.ttl) {
+      if (typeof input.data.ttl !== 'number') {
+        throw Error("Invalid value for the parameter 'ttl' which must be a number.")
+      }
+      validatedInput.ttl = input.data.ttl
     }
     return validatedInput as ValidInput
   }

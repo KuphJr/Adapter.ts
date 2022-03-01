@@ -44,20 +44,20 @@ export class ResponseCacher {
         )
       } else {
         // If no cached result has been found, throw an error.
-        throw new Error('No current data for that request. The cache is now waiting to be filled.')
+        throw Error('No current data for that request. The cache is now waiting to be filled.')
       }
       const cachedResult = JSON.parse(cachedResultJSONstring)
       if (Validator.isValidOutput(cachedResult.result)) {
         // If a time-to-live (ttl) is specified, only return
         // the cached data if it is younger than the ttl.
-        if (!input?.ttl ||
-            (input?.ttl && (Date.now() - cachedResult.POSIXtime) < input.ttl)) {
+        if (!validatedInput.ttl ||
+            (validatedInput.ttl && (Date.now() - cachedResult.POSIXtime) < validatedInput.ttl)) {
           return cachedResult.result
         } else {
-          throw new Error('The cached data is older than the ttl.')
+          throw Error('The cached data is older than the ttl.')
         }
       }
-      throw new Error('The cached result is invalid.')
+      throw Error('The cached result is invalid.')
     } finally {
       // Make a new Adapter.js request to refresh the cache.
       createRequest(input, (status: number, result: Result) => {
