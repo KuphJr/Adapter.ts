@@ -33,6 +33,8 @@ const keys = (0, crypto_1.generateKeyPairSync)('rsa', {
         format: "pem",
     }
 });
-fs.writeFileSync(path.join(__dirname, 'publicKey.txt'), keys.publicKey.replace('-----BEGIN RSA PUBLIC KEY-----\n', '').replace('\n-----END RSA PUBLIC KEY-----\n', ''));
-fs.writeFileSync(path.join(__dirname, 'privateKey.txt'), keys.privateKey.replace('-----BEGIN RSA PRIVATE KEY-----\n', '').replace('\n-----END RSA PRIVATE KEY-----\n', ''));
-console.log(`${keys.publicKey}${keys.privateKey}Keys have been stored in the environment file: ${path.join(__dirname, '..', '.env')}`);
+const publicKey = keys.publicKey.replace('-----BEGIN RSA PUBLIC KEY-----\n', '').replace('\n-----END RSA PUBLIC KEY-----\n', '');
+const privateKey = keys.privateKey.replace('-----BEGIN RSA PRIVATE KEY-----\n', '').replace('\n-----END RSA PRIVATE KEY-----\n', '');
+fs.writeFileSync(path.join(__dirname, 'publicKey.txt'), publicKey);
+fs.writeFileSync(path.join(__dirname, 'privateKey.txt'), privateKey);
+console.log(`PUBLICKEY:\n${publicKey}PRIVATEKEY:\n${privateKey}\nKeys have been stored in the files:\n${path.join(__dirname, 'publicKey.txt')}, ${path.join(__dirname, 'privateKey.txt')}`);
