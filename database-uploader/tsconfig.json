@@ -1,5 +1,5 @@
 {
-  "include": [ "src/**/*", "src/**/*.json", "test/**/*.test.ts" ],
+  "include": [ "src/**/*", "src/**/*.json" ],
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig.json to read more about this file */
 

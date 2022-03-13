@@ -23,9 +23,9 @@ export class Encryptor {
     publicKey: string,
     validatedInput: ValidCachedData
   ): EncryptedObject {
-    const userDataJsonString = Buffer.from(JSON.stringify(validatedInput))
+    const pemPublicKey = '-----BEGIN RSA PUBLIC KEY-----\n' + publicKey + '\n-----END RSA PUBLIC KEY-----\n'
     const decryptionKey = randomBytes(64)
-    const encryptedDecryptionKey = publicEncrypt(publicKey, decryptionKey).toString('base64')
+    const encryptedDecryptionKey = publicEncrypt(pemPublicKey, decryptionKey).toString('base64')
     const encryptedUserDataJsonString = AES.encrypt(
       JSON.stringify(validatedInput),
       decryptionKey.toString() + validatedInput.contractAddress + validatedInput.ref
@@ -42,8 +42,9 @@ export class Encryptor {
     ref: string,
     encryptedObj: EncryptedObject
   ): ValidCachedData {
+    const pemPrivateKey = '-----BEGIN RSA PRIVATE KEY-----\n' + privateKey + '\n-----END RSA PRIVATE KEY-----\n'
     const decryptionKey = privateDecrypt(
-      privateKey,
+      pemPrivateKey,
       Buffer.from(encryptedObj.encryptedDecryptionKey, 'base64')
     )
     const decryptedUserDataHexString = AES.decrypt(
