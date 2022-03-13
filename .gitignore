@@ -8,4 +8,6 @@
 /external-adapter-entry/src/key.json
 /database-uploader/build/key.json
 /generateKeys/node_modules
+/generateKeys/publicKey.txt
+/generateKeys/privateKey.txt
 .env
