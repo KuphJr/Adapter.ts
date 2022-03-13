@@ -33,7 +33,7 @@ Please note, the `faas-sandbox` and `database-uploader` must be installed on a f
 
 Before starting the installation, be sure to have an active Google Cloud Platform account and create a new project from the Google Cloud Console.  The `faas-sandbox` and `database-uploader` should both be installed within the same project on Google Cloud Platform.
 
-Installation instructions for each component can be found in the respective folders `faas-sandbox`, `database-uploader` and `external-adapter-entry`.
+Installation instructions for each component can be found in the respective folders `faas-sandbox`, `database-uploader` and `external-adapter-entry`.  It is recommended to install the `faas-sandbox` first as it is the easier to install and will make it easier to understand the `database-uploader` installation process.
 
 Once the `database-uploader` and `faas-sandbox` have been installed and the `external-adapter-entry` is running locally, create a new bridge  from the Chainlink node dashboard with the following information:
 Bridge Name: adapter.js
