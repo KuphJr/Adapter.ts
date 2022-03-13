@@ -4,9 +4,9 @@ import dotenv from 'dotenv'
 dotenv.config({ path: path.join(__dirname, '..', '..', '..', '.env')})
 
 import { Encryptor } from '../../src/Encryptor'
-import { ValidCachedData } from '../../src/CachedDataValidator'
+import type { ValidCachedData } from '../../src/CachedDataValidator'
 
-describe("Encryption and decryption", () => {
+describe("Encryptor", () => {
   const cachedData = {
     contractAddress: "0x514910771af9ca656af840dff83e8264ecf986ca",
     ref: "abc13",

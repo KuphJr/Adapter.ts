@@ -4,7 +4,7 @@
   "description": "This is a tool used to generate public and private encryption keys which are then saved to a '.env' file in the root directory.",
   "main": "generateKeys.js",
   "scripts": {
-    "generateKeys": "tsc && node generateKeys.js"
+    "generateKeys": "node generateKeys.js"
   },
   "author": "KuphJr",
   "license": "ISC",

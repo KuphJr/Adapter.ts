@@ -12,7 +12,7 @@ export class ResponseCacher {
   ramStorageDir: string
 
   constructor(
-    public persistantStorageDir = path.join(__dirname, '..', '..', 'cachedResponses'),
+    public persistantStorageDir = path.join(__dirname, 'cachedResponses'),
     ramStorageDir: string = 'cachedResponses'
   ) {
     this.ramStorageDir = path.join(os.tmpdir(), ramStorageDir)

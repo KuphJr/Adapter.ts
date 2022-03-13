@@ -1,5 +1,7 @@
 # [Adapter.js](https://adapterjs.link/)
 
+## Installation Instructions
+
 ## JavaScript Sandbox Running on a Function as a Service Platform
 
 This API creates a sandbox for executing JavaScript code on a function-as-a-service (FaaS) platform like Google Cloud Functions, AWS Lambda or Azure Functions.  It takes two parameters which are a string containing JavaScript code and a variables object which contains additional variables that can be accessed within the provided JavaScript code.  The API will then send back a reply containing value that was returned by the provided JavaScript code.

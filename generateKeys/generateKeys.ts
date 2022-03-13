@@ -16,7 +16,7 @@ const keys = generateKeyPairSync('rsa',
     }
   }
 )
-// const publicKey = keys.publicKey.export({type: 'pkcs1', format: 'pem'}).toString().replace(/\n/g, '')
-// const privateKey = keys.privateKey.export({type: 'pkcs1', format: 'pem'}).toString().replace(/\n/g, '')
-fs.writeFileSync(path.join(__dirname, '..', '.env'), `PUBLICKEY="${keys.publicKey}"\nPRIVATEKEY="${keys.privateKey}"`)
+//fs.writeFileSync(path.join(__dirname, '..', '.env'), `PUBLICKEY="${keys.publicKey}"\nPRIVATEKEY="${keys.privateKey}"`)
+fs.writeFileSync(path.join(__dirname, 'publicKey.txt'), keys.publicKey)
+fs.writeFileSync(path.join(__dirname, 'privateKey.txt'), keys.privateKey)
 console.log(`${keys.publicKey}${keys.privateKey}Keys have been stored in the environment file: ${path.join(__dirname, '..', '.env')}`)

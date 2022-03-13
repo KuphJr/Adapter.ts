@@ -1,8 +1,11 @@
 /database-uploader/node_modules
+/database-uploader/key.json
 /external-adapter-entry/node_modules
+/external-adapter-entry/cachedResponses
 /faas-sandbox/node_modules
 /database-uploader/key.json
 /external-adapter-entry/build/key.json
 /external-adapter-entry/src/key.json
-database-uploader/build/key.json
+/database-uploader/build/key.json
+/generateKeys/node_modules
 .env
