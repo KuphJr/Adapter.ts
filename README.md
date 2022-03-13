@@ -7,7 +7,7 @@
 ## Overview
 
 [Watch the project overview on YouTube](https://youtu.be/V_P_IAfr22I)
-**Pleas note, significant changes and updates have been made in v0.2.0 since this video was made.**
+**Pleas note, significant changes and updates have been made in v0.2.1 since this video was made.**
 
 ### Problem
 
