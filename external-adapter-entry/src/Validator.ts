@@ -49,24 +49,18 @@ export class Validator {
       throw Error("The parameter 'type' must be provided as a string.")
     switch (input.data.type) {
       case ('bool'):
-        break
       case ('uint'):
-        break
       case ('uint256'):
-        break
       case ('int'):
-        break
       case ('int256'):
-        break
       case ('bytes32'):
-        break
       case ('string'):
-        break
+      case('byte[]'):
       case ('bytes'):
         break
       default:
         throw Error("Invalid value for the parameter 'type' which must be either " +
-        "'bool', 'uint', 'uint256', 'int', 'int256', 'bytes32', 'string' or 'bytes'.")
+        "'bool', 'uint', 'uint256', 'int', 'int256', 'bytes32', 'string', 'bytes' or 'byte[]'.")
     }
     const validatedInput: ValidInput = { type: input.data.type }
 
@@ -157,7 +151,7 @@ export class Validator {
         if (typeof output !== 'string')
           throw Error('The returned value must be a string. Returned: ' + output)
         break
-      case ('bytes32'): case ('bytes'):
+      case ('bytes32'): case ('bytes'): case ('byte[]'):
         break
       default:
         throw Error("Invalid value for the parameter 'type' which must be either " +
@@ -169,7 +163,7 @@ export class Validator {
       throw Error('Invalid output.')
   }
 
-  private static isValidOutput = (output: unknown): output is ValidOutput => {
+  static isValidOutput = (output: unknown): output is ValidOutput => {
     if (JSON.stringify(output).length > 1000)
       throw new Error('The output returned by the JavaScript code is larger than 1 KB')
     switch (typeof output) {

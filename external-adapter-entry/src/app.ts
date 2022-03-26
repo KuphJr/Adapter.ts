@@ -13,7 +13,7 @@ import { ResponseCacher } from './ResponseCacher'
 // load environmental variables from .env file
 dotenv.config({ path: path.join(__dirname, '..', '..', '.env')})
 
-const responseCacher = new ResponseCacher()
+const responseCacher = new ResponseCacher(process.env.CACHING_DIR)
 
 const app = express()
 const port = process.env.EA_PORT || 8032
