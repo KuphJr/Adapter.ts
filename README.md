@@ -4,10 +4,12 @@
 
 **A Chainlink external adapter for securely executing custom JavaScript**
 
+Please note, this project has been created independent of Chainlink Labs and is in no way affiliated with Chainlink Labs.  It is an independent, open source project developed for use with the Chainlink protocol.
+
 ## Overview
 
 [Watch the project overview on YouTube](https://youtu.be/V_P_IAfr22I)
-**Pleas note, significant changes and updates have been made in v0.2.1 since this video was made.**
+**Please note, significant changes and updates have been made in v0.2.1 since this video was made.**
 
 ### Problem
 
