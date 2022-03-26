@@ -20,7 +20,7 @@ const storage_1 = require("@google-cloud/storage");
 const crypto_js_1 = require("crypto-js");
 const Encryptor_1 = require("./Encryptor");
 class DataStorage {
-    constructor({ publicKey = '', privateKey = '', keyFileName = 'key.json', bucketName = 'cached-data' }) {
+    constructor({ publicKey = '', privateKey = '', keyFileName = 'key.json', bucketName = 'adapterjs-encrypted-user-data' }) {
         this.publicKey = publicKey;
         this.privateKey = privateKey;
         this.storage = new storage_1.Storage({ keyFilename: keyFileName });

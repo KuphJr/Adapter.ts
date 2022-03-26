@@ -17,18 +17,6 @@ const IpfsFetcher_1 = require("./IpfsFetcher");
 const Errors_1 = require("./Errors");
 const Sandbox_1 = require("./Sandbox");
 const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, function* () {
-    if (process.env.NODEKEY && input.nodeKey !== process.env.NODEKEY) {
-        (0, logger_1.log)('SETUP ERROR: Request does not contain a valid nodeKey.');
-        callback(500, {
-            status: 'errored',
-            statusCode: 500,
-            error: {
-                name: 'Setup Error',
-                message: 'Request does not contain a valid nodeKey.'
-            }
-        });
-        return;
-    }
     (0, logger_1.log)("INPUT: " + JSON.stringify(input));
     // ensure the PRIVATEKEY environmental variable has been set
     if (typeof process.env.PRIVATEKEY !== 'string') {

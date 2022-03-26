@@ -18,7 +18,7 @@ export class DataStorage {
     publicKey = '',
     privateKey = '',
     keyFileName = 'key.json',
-    bucketName = 'cached-data'
+    bucketName = 'adapterjs-encrypted-user-data'
   }) {
       this.publicKey = publicKey
       this.privateKey = privateKey

@@ -12,7 +12,7 @@ const logger_1 = require("./logger");
 const Validator_1 = require("./Validator");
 const index_1 = require("./index");
 class ResponseCacher {
-    constructor(persistantStorageDir = path_1.default.join(__dirname, '..', '..', 'cachedResponses'), ramStorageDir = 'cachedResponses') {
+    constructor(persistantStorageDir = path_1.default.join(__dirname, 'cachedResponses'), ramStorageDir = 'cachedResponses') {
         this.persistantStorageDir = persistantStorageDir;
         this.ramStorageDir = path_1.default.join(os_1.default.tmpdir(), ramStorageDir);
         // create the required directories if they do not already exist
@@ -28,25 +28,33 @@ class ResponseCacher {
         const validatedInput = Validator_1.Validator.validateInput(input);
         // Use the hash of the validated input from the request as the file name.
         const filename = (0, crypto_js_1.SHA256)(JSON.stringify(validatedInput)) + '.json';
+        let cachedResultJSONstring;
         try {
             if (fs_1.default.existsSync(path_1.default.join(this.ramStorageDir, filename))) {
                 // If the cached result exists in RAM storage, use that.
-                const cachedResult = JSON.parse(fs_1.default.readFileSync(path_1.default.join(this.ramStorageDir, filename), { encoding: 'utf8' }));
-                if (Validator_1.Validator.isValidOutput(cachedResult.result))
-                    return cachedResult.result;
-                throw new Error('The cached result is invalid.');
+                cachedResultJSONstring = fs_1.default.readFileSync(path_1.default.join(this.ramStorageDir, filename), { encoding: 'utf8' });
             }
             else if (fs_1.default.existsSync(path_1.default.join(this.persistantStorageDir, filename))) {
                 // If the cached result exists in persistant storage, use that.
-                const cachedResult = JSON.parse(fs_1.default.readFileSync(path_1.default.join(this.persistantStorageDir, filename), { encoding: 'utf8' }));
-                if (Validator_1.Validator.isValidOutput(cachedResult.result))
-                    return cachedResult.result;
-                throw new Error('The cached result is invalid.');
+                cachedResultJSONstring = fs_1.default.readFileSync(path_1.default.join(this.persistantStorageDir, filename), { encoding: 'utf8' });
             }
             else {
                 // If no cached result has been found, throw an error.
-                throw new Error('No current data for that request.  The cache is now waiting to be filled.');
+                throw Error('No current data for that request. The cache is now waiting to be filled.');
             }
+            const cachedResult = JSON.parse(cachedResultJSONstring);
+            if (Validator_1.Validator.isValidOutput(cachedResult.result)) {
+                // If a time-to-live (ttl) is specified, only return
+                // the cached data if it is younger than the ttl.
+                if (!validatedInput.ttl ||
+                    (validatedInput.ttl && (Date.now() - cachedResult.POSIXtime) < validatedInput.ttl)) {
+                    return cachedResult.result;
+                }
+                else {
+                    throw Error('The cached data is older than the ttl.');
+                }
+            }
+            throw Error('The cached result is invalid.');
         }
         finally {
             // Make a new Adapter.js request to refresh the cache.
@@ -54,7 +62,7 @@ class ResponseCacher {
                 if (status === 200) {
                     const cachedResultString = JSON.stringify({
                         // Record the time the cache was last filled
-                        UTCtime: new Date().toUTCString(),
+                        POSIXtime: Date.now(),
                         result
                     });
                     (0, logger_1.log)('FILLING CACHE: ' + cachedResultString);

@@ -13,7 +13,7 @@ export class IpfsFetcher {
     }
     const files = await archive.files()
     if (files.length !== 1) {
-      throw new Error(`Invalid IPFS archive retrieved. It must be a single '.js' file.`)
+      throw new Error(`Invalid IPFS archive retrieved. It must be a single JavaScript file.`)
     }
     return await files[0].text()
   }

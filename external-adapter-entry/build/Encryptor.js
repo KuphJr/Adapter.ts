@@ -6,9 +6,9 @@ const crypto_js_1 = require("crypto-js");
 const CachedDataValidator_1 = require("./CachedDataValidator");
 class Encryptor {
     static encrypt(publicKey, validatedInput) {
-        const userDataJsonString = Buffer.from(JSON.stringify(validatedInput));
+        const pemPublicKey = '-----BEGIN RSA PUBLIC KEY-----\n' + publicKey + '\n-----END RSA PUBLIC KEY-----\n';
         const decryptionKey = (0, crypto_1.randomBytes)(64);
-        const encryptedDecryptionKey = (0, crypto_1.publicEncrypt)(publicKey, decryptionKey).toString('base64');
+        const encryptedDecryptionKey = (0, crypto_1.publicEncrypt)(pemPublicKey, decryptionKey).toString('base64');
         const encryptedUserDataJsonString = crypto_js_1.AES.encrypt(JSON.stringify(validatedInput), decryptionKey.toString() + validatedInput.contractAddress + validatedInput.ref).toString();
         return {
             encryptedDecryptionKey: encryptedDecryptionKey,
@@ -16,7 +16,8 @@ class Encryptor {
         };
     }
     static decrypt(privateKey, contractAddress, ref, encryptedObj) {
-        const decryptionKey = (0, crypto_1.privateDecrypt)(privateKey, Buffer.from(encryptedObj.encryptedDecryptionKey, 'base64'));
+        const pemPrivateKey = '-----BEGIN RSA PRIVATE KEY-----\n' + privateKey + '\n-----END RSA PRIVATE KEY-----\n';
+        const decryptionKey = (0, crypto_1.privateDecrypt)(pemPrivateKey, Buffer.from(encryptedObj.encryptedDecryptionKey, 'base64'));
         const decryptedUserDataHexString = crypto_js_1.AES.decrypt(encryptedObj.encryptedUserDataJsonString, decryptionKey.toString() + contractAddress + ref).toString();
         const userDataJsonString = crypto_js_1.enc.Utf8.stringify(crypto_js_1.enc.Hex.parse(decryptedUserDataHexString));
         const userData = JSON.parse(userDataJsonString);

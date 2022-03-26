@@ -187,6 +187,9 @@ export class Validator {
   }
 
   static isVariables = (variables: unknown): variables is Variables => {
+    if (typeof variables !== 'object') return false
+    if (Array.isArray(variables)) return false
+    if (Buffer.isBuffer(variables)) return false
     for (const variable of Object.keys(variables as Variables)) {
       if (typeof variable !== 'string') return false
     }

@@ -21,9 +21,9 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const index_1 = require("./index");
 const logger_1 = require("./logger");
 const ResponseCacher_1 = require("./ResponseCacher");
-const responseCacher = new ResponseCacher_1.ResponseCacher();
 // load environmental variables from .env file
 dotenv_1.default.config({ path: path_1.default.join(__dirname, '..', '..', '.env') });
+const responseCacher = new ResponseCacher_1.ResponseCacher();
 const app = (0, express_1.default)();
 const port = process_1.default.env.EA_PORT || 8032;
 app.use((0, cors_1.default)());
@@ -51,7 +51,7 @@ app.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if ((_b = (_a = req.body) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.cached) {
             // CachedResponse.getCachedResponse() will return the response to the
             // last identical Adapter.js request.  It will then create a new Adapter.js
-            // request to refresh the cash.
+            // request to refresh the cache.
             try {
                 const cachedResult = responseCacher.getCachedResult(req.body);
                 res.status(cachedResult.statusCode).json(cachedResult.result);
