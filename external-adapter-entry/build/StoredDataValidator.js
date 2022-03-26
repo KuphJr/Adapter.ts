@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CachedDataValidator = void 0;
-class CachedDataValidator {
-    static isValidCachedData(input) {
+exports.StoredDataValidator = void 0;
+class StoredDataValidator {
+    static isValidStoredData(input) {
         // Check if the contract address is valid
         if (!input.contractAddress) {
             throw new Error(`The authorized contract address was not provided.`);
@@ -30,11 +30,11 @@ class CachedDataValidator {
         }
         // If JavaScript is provided, check if the JavaScript is valid 
         if (input.js && typeof input.js !== 'string') {
-            throw new Error('The cached JavaScript code must be a string.');
+            throw new Error('The stored JavaScript code must be a string.');
         }
         // If variables are provided, check if they are sent as a valid JavaScript object
         if (input.vars && (typeof input.vars !== 'object' || Array.isArray(input.vars))) {
-            throw new Error('The cached variables must be provided as a JavaScript object.');
+            throw new Error('The stored variables must be provided as a JavaScript object.');
         }
         if (JSON.stringify(input).length > 8000000) {
             throw new Error('The data object must be less than 8 MB.');
@@ -42,4 +42,4 @@ class CachedDataValidator {
         return true;
     }
 }
-exports.CachedDataValidator = CachedDataValidator;
+exports.StoredDataValidator = StoredDataValidator;

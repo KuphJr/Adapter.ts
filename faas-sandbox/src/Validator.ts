@@ -11,16 +11,14 @@ export type ValidOutput = boolean | string | number | bigint | boolean[] | strin
 
 export class Validator {
   static isValidInput (input: unknown): input is ValidRequest {
-    if (typeof (input as ValidRequest).js !== 'string') {
+    if (typeof (input as ValidRequest).js !== 'string')
       throw Error("The parameter 'js' must be provided as a string.")
-    }
     if (
       (input as ValidRequest).vars &&
       (Array.isArray((input as ValidRequest).vars)
       || !Validator.isVariables((input as ValidRequest).vars))
-    ) {
+    )
       throw Error("The parameter 'vars' must be provided as a JavaScript object and cannot be an array.")
-    }
     return true
   }
 

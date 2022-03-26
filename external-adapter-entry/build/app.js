@@ -23,7 +23,7 @@ const logger_1 = require("./logger");
 const ResponseCacher_1 = require("./ResponseCacher");
 // load environmental variables from .env file
 dotenv_1.default.config({ path: path_1.default.join(__dirname, '..', '..', '.env') });
-const responseCacher = new ResponseCacher_1.ResponseCacher();
+const responseCacher = new ResponseCacher_1.ResponseCacher(process_1.default.env.CACHING_DIR);
 const app = (0, express_1.default)();
 const port = process_1.default.env.EA_PORT || 8032;
 app.use((0, cors_1.default)());

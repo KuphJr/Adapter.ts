@@ -17,12 +17,10 @@ export class ResponseCacher {
   ) {
     this.ramStorageDir = path.join(os.tmpdir(), ramStorageDir)
     // create the required directories if they do not already exist
-    if (!fs.existsSync(persistantStorageDir)){
-      fs.mkdirSync(persistantStorageDir, { recursive: true });
-    }
-    if (!fs.existsSync(this.ramStorageDir)){
-      fs.mkdirSync(this.ramStorageDir, { recursive: true });
-    }
+    if (!fs.existsSync(persistantStorageDir))
+      fs.mkdirSync(persistantStorageDir, { recursive: true })
+    if (!fs.existsSync(this.ramStorageDir))
+      fs.mkdirSync(this.ramStorageDir, { recursive: true })
   }
 
   getCachedResult(input: any): Result {
@@ -55,11 +53,10 @@ export class ResponseCacher {
         // If a time-to-live (ttl) is specified, only return
         // the cached data if it is younger than the ttl.
         if (!timeToLive ||
-            (timeToLive && (Date.now() - cachedResult.POSIXtime) < timeToLive)) {
+            (timeToLive && (Date.now() - cachedResult.POSIXtime) < timeToLive))
           return cachedResult.result
-        } else {
+        else
           throw Error('The cached data is older than the ttl.')
-        }
       }
       throw Error('The cached result is invalid.')
     } finally {
@@ -72,8 +69,16 @@ export class ResponseCacher {
             result
           })
           log('FILLING CACHE: ' + cachedResultString)
-          fs.writeFileSync(path.join(this.ramStorageDir, filename), cachedResultString)
-          fs.writeFileSync(path.join(this.persistantStorageDir, filename), cachedResultString)
+          try {
+            fs.writeFileSync(path.join(this.ramStorageDir, filename), cachedResultString)
+          } catch (_) {
+            log('ERROR FILLING CACHE: COULD NOT WRITE TO RAM CACHE')
+          }
+          try {
+            fs.writeFileSync(path.join(this.persistantStorageDir, filename), cachedResultString)
+          } catch (_) {
+            log('ERROR FILLING CACHE: COULD NOT WRITE TO DISK CACHE')
+          }
         } else {
           log('ERROR FILLING CACHE: ' + JSON.stringify(result))
         }

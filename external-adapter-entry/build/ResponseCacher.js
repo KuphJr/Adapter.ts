@@ -16,16 +16,17 @@ class ResponseCacher {
         this.persistantStorageDir = persistantStorageDir;
         this.ramStorageDir = path_1.default.join(os_1.default.tmpdir(), ramStorageDir);
         // create the required directories if they do not already exist
-        if (!fs_1.default.existsSync(persistantStorageDir)) {
+        if (!fs_1.default.existsSync(persistantStorageDir))
             fs_1.default.mkdirSync(persistantStorageDir, { recursive: true });
-        }
-        if (!fs_1.default.existsSync(this.ramStorageDir)) {
+        if (!fs_1.default.existsSync(this.ramStorageDir))
             fs_1.default.mkdirSync(this.ramStorageDir, { recursive: true });
-        }
     }
     getCachedResult(input) {
         (0, logger_1.log)('GetCachedResult INPUT: ' + JSON.stringify(input));
         const validatedInput = Validator_1.Validator.validateInput(input);
+        const timeToLive = validatedInput.ttl;
+        // don't include the ttl in the object hash
+        delete validatedInput.ttl;
         // Use the hash of the validated input from the request as the file name.
         const filename = (0, crypto_js_1.SHA256)(JSON.stringify(validatedInput)) + '.json';
         let cachedResultJSONstring;
@@ -41,18 +42,17 @@ class ResponseCacher {
             else {
                 // If no cached result has been found, throw an error.
                 throw Error('No current data for that request. The cache is now waiting to be filled.');
+                // Instead of throwing an error, there should be some sort of 'Dummy response' that can be set by the user in the initial request or if ttl is exceeded
             }
             const cachedResult = JSON.parse(cachedResultJSONstring);
             if (Validator_1.Validator.isValidOutput(cachedResult.result)) {
                 // If a time-to-live (ttl) is specified, only return
                 // the cached data if it is younger than the ttl.
-                if (!validatedInput.ttl ||
-                    (validatedInput.ttl && (Date.now() - cachedResult.POSIXtime) < validatedInput.ttl)) {
+                if (!timeToLive ||
+                    (timeToLive && (Date.now() - cachedResult.POSIXtime) < timeToLive))
                     return cachedResult.result;
-                }
-                else {
+                else
                     throw Error('The cached data is older than the ttl.');
-                }
             }
             throw Error('The cached result is invalid.');
         }
@@ -66,8 +66,18 @@ class ResponseCacher {
                         result
                     });
                     (0, logger_1.log)('FILLING CACHE: ' + cachedResultString);
-                    fs_1.default.writeFileSync(path_1.default.join(this.ramStorageDir, filename), cachedResultString);
-                    fs_1.default.writeFileSync(path_1.default.join(this.persistantStorageDir, filename), cachedResultString);
+                    try {
+                        fs_1.default.writeFileSync(path_1.default.join(this.ramStorageDir, filename), cachedResultString);
+                    }
+                    catch (_) {
+                        (0, logger_1.log)('ERROR FILLING CACHE: COULD NOT WRITE TO RAM CACHE');
+                    }
+                    try {
+                        fs_1.default.writeFileSync(path_1.default.join(this.persistantStorageDir, filename), cachedResultString);
+                    }
+                    catch (_) {
+                        (0, logger_1.log)('ERROR FILLING CACHE: COULD NOT WRITE TO DISK CACHE');
+                    }
                 }
                 else {
                     (0, logger_1.log)('ERROR FILLING CACHE: ' + JSON.stringify(result));
