@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 
 import { log } from './logger'
-import type { ValidCachedData } from './CachedDataValidator'
+import type { ValidStoredData } from './StoredDataValidator'
 import { Validator } from './Validator'
 import type { ValidInput, ValidOutput, Variables } from './Validator'
 import { DataStorage } from './GoogleCloudStorage'
@@ -69,11 +69,13 @@ export const createRequest = async (
   // check if any cached data should be fetched from the adapter's database
   try {
     const storage = new DataStorage({ privateKey: process.env.PRIVATEKEY })
-    let validCachedData: ValidCachedData
+    let validCachedData: ValidStoredData
     if (validatedInput.contractAddress && validatedInput.ref) {
       validCachedData = await storage.retrieveData(validatedInput.contractAddress, validatedInput.ref)
-      if (validCachedData.js) javascriptString = validCachedData.js
-      if (validCachedData.vars) vars = validCachedData.vars
+      if (validCachedData.js)
+        javascriptString = validCachedData.js
+      if (validCachedData.vars)
+        vars = validCachedData.vars
     }
   } catch (untypedError) {
     const error = untypedError as Error
@@ -162,7 +164,6 @@ exports.gcpservice = async (req: Request, res: Response ) => {
   res.header('Content-Type', 'application/json')
   res.header('Access-Control-Allow-Origin', '*')
   res.header('Access-Control-Allow-Headers', 'Content-Type')
-
   // respond to CORS preflight requests
   if (req.method === 'OPTIONS') {
     res.set('Access-Control-Allow-Methods', 'GET')

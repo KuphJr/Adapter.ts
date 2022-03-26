@@ -178,8 +178,10 @@ export class Validator {
       case 'number':
         return true
       case 'object':
-        if (Buffer.isBuffer(output)) return true
-      default: throw new Error("The output returned by the JavaScript code is not of type 'boolean', 'number', 'string', or 'Buffer'.")
+        if (Buffer.isBuffer(output))
+          return true
+      default:
+        throw new Error("The output returned by the JavaScript code is not of type 'boolean', 'number', 'string', or 'Buffer'.")
     }
   }
 

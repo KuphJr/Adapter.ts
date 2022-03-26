@@ -6,7 +6,7 @@ import { SHA256 } from 'crypto-js'
 
 import { Encryptor } from './Encryptor'
 import type { EncryptedObject } from './Encryptor'
-import type { ValidCachedData } from './CachedDataValidator';
+import type { ValidStoredData } from './StoredDataValidator';
 
 export class DataStorage {
   storage: Storage
@@ -26,26 +26,23 @@ export class DataStorage {
       this.bucket = this.storage.bucket(bucketName)
   }
 
-  async storeData(input: ValidCachedData): Promise<void> {
-    if (this.publicKey === '') {
+  async storeData(input: ValidStoredData): Promise<void> {
+    if (this.publicKey === '')
       throw new Error('Public key has not been provided.')
-    }
     const encryptedObj = Encryptor.encrypt(this.publicKey, input)
     const filename = SHA256(input.contractAddress + input.ref).toString() + '.json'
     const file = this.bucket.file(filename)
     const fileExists = await file.exists()
-    if (fileExists[0]) {
+    if (fileExists[0])
       throw new Error(
         `Reference ID ${input.ref} is already in use for contract ${input.contractAddress}.`
       )
-    }
     await file.save(JSON.stringify(encryptedObj))
   }
 
-  async retrieveData(contractAddress: string, ref: string): Promise<ValidCachedData> {
-    if (this.privateKey === '') {
+  async retrieveData(contractAddress: string, ref: string): Promise<ValidStoredData> {
+    if (this.privateKey === '')
       throw new Error('Private key has not been provided')
-    }
     const filename = SHA256(contractAddress + ref).toString() + '.json'
     const localfile = path.join(os.tmpdir(), filename)
     try {
@@ -53,13 +50,13 @@ export class DataStorage {
         await this.bucket.file(filename).download({ destination: localfile })
       } catch (untypedError) {
         const error = untypedError as Error
-        throw new Error(`Unable to fetch cached data: ${error.message}`)
+        throw new Error(`Unable to fetch stored data: ${error.message}`)
       }
       const encryptedObj = JSON.parse(
         fs.readFileSync(localfile, {encoding: 'utf8'})
       ) as EncryptedObject
-      const cachedData = Encryptor.decrypt(this.privateKey, contractAddress, ref, encryptedObj)
-      return cachedData
+      const storedData = Encryptor.decrypt(this.privateKey, contractAddress, ref, encryptedObj)
+      return storedData
     } finally {
       // In the event of a failure, ensure the localfile has been deleted
       try {

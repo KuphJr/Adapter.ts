@@ -4,10 +4,10 @@ import dotenv from 'dotenv'
 dotenv.config({ path: path.join(__dirname, '..', '..', '..', '.env')})
 
 import { DataStorage } from '../../src/GoogleCloudStorage'
-import type { ValidCachedData } from '../../src/CachedDataValidator'
+import type { ValidStoredData } from '../../src/StoredDataValidator'
 
 describe("GoogleCloudStorage", () => {
-  const cachedData = {
+  const storedData = {
     contractAddress: "0x514910771af9ca656af840dff83e8264ecf986ca",
     ref: makeRef(16),
     vars: {
@@ -23,13 +23,13 @@ describe("GoogleCloudStorage", () => {
   const dataStorage = new DataStorage({ publicKey: process.env.PUBLICKEY, privateKey: process.env.PRIVATEKEY })
 
   it('Should upload and download successfully', async () => {
-    await dataStorage.storeData(cachedData as ValidCachedData)
-    const retrievedData = await dataStorage.retrieveData(cachedData.contractAddress, cachedData.ref)
-    expect(retrievedData).toEqual(cachedData)
+    await dataStorage.storeData(storedData as ValidStoredData)
+    const retrievedData = await dataStorage.retrieveData(storedData.contractAddress, storedData.ref)
+    expect(retrievedData).toEqual(storedData)
   })
 
   it('Should error if the ref is duplicated', async () => {
-    await expect(async () => { await dataStorage.storeData(cachedData as ValidCachedData) }).rejects.toBeInstanceOf(Error)
+    await expect(async () => { await dataStorage.storeData(storedData as ValidStoredData) }).rejects.toBeInstanceOf(Error)
   })
 })
 

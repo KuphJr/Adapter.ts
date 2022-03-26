@@ -4,10 +4,10 @@ import dotenv from 'dotenv'
 dotenv.config({ path: path.join(__dirname, '..', '..', '..', '.env')})
 
 import { Encryptor } from '../../src/Encryptor'
-import type { ValidCachedData } from '../../src/CachedDataValidator'
+import type { ValidStoredData } from '../../src/StoredDataValidator'
 
 describe("Encryptor", () => {
-  const cachedData = {
+  const storedData = {
     contractAddress: "0x514910771af9ca656af840dff83e8264ecf986ca",
     ref: "abc13",
     vars: {
@@ -21,12 +21,11 @@ describe("Encryptor", () => {
     }
   }
 
-  const encrypted = Encryptor.encrypt(process.env.PUBLICKEY as string, cachedData as ValidCachedData)
+  const encrypted = Encryptor.encrypt(process.env.PUBLICKEY as string, storedData as ValidStoredData)
 
   const decrypted = Encryptor.decrypt(process.env.PRIVATEKEY as string, "0x514910771af9ca656af840dff83e8264ecf986ca", "abc13", encrypted)
 
   it('Should encrypt and decrypt successfully', () => {
-    expect(decrypted).toEqual(cachedData)
+    expect(decrypted).toEqual(storedData)
   })
 })
-

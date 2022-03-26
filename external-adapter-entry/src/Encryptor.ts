@@ -1,8 +1,8 @@
 import { publicEncrypt, privateDecrypt, randomBytes } from 'crypto'
 import { AES, enc } from 'crypto-js'
 
-import { CachedDataValidator } from './CachedDataValidator'
-import type { ValidCachedData } from './CachedDataValidator'
+import { StoredDataValidator } from './StoredDataValidator'
+import type { ValidStoredData } from './StoredDataValidator'
 
 export interface EncryptedObject {
   // The encryptedDecryptionKey is encrypted using a public key.
@@ -21,7 +21,7 @@ export interface Error {
 export class Encryptor {
   static encrypt(
     publicKey: string,
-    validatedInput: ValidCachedData
+    validatedInput: ValidStoredData
   ): EncryptedObject {
     const pemPublicKey = '-----BEGIN RSA PUBLIC KEY-----\n' + publicKey + '\n-----END RSA PUBLIC KEY-----\n'
     const decryptionKey = randomBytes(64)
@@ -41,7 +41,7 @@ export class Encryptor {
     contractAddress: string,
     ref: string,
     encryptedObj: EncryptedObject
-  ): ValidCachedData {
+  ): ValidStoredData {
     const pemPrivateKey = '-----BEGIN RSA PRIVATE KEY-----\n' + privateKey + '\n-----END RSA PRIVATE KEY-----\n'
     const decryptionKey = privateDecrypt(
       pemPrivateKey,
@@ -54,11 +54,10 @@ export class Encryptor {
     const userDataJsonString = enc.Utf8.stringify(enc.Hex.parse(decryptedUserDataHexString))
     const userData = JSON.parse(userDataJsonString)
     try {
-      if (CachedDataValidator.isValidCachedData(userData)) {
+      if (StoredDataValidator.isValidStoredData(userData))
         return userData
-      } else {
+      else
         throw Error('Decrypted data is not valid.')
-      }
     } catch (untypedError) {
       const error = untypedError as Error
       throw Error(error.message)

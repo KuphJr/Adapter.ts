@@ -1,4 +1,3 @@
-import process from 'process'
 import path from 'path'
 import dotenv from 'dotenv'
 dotenv.config({ path: path.join(__dirname, '..', '..', '..', '.env')})
@@ -58,7 +57,6 @@ describe("Validator", () => {
     expect(Validator.isValidOutput([false, false])).toBe(true)
     expect(Validator.isValidOutput(['string1', 'string2'])).toBe(true)
     expect(Validator.isValidOutput([10, 11])).toBe(true)
-    expect(Validator.isValidOutput([Buffer.from([100, 10, 200, 2]), Buffer.from([10, 17, 220, 5])])).toBe(true)
   })
 
   it('Should throw and error for invalid output type', () => {

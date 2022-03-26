@@ -1,8 +1,8 @@
-import { CachedDataValidator } from '../../src/CachedDataValidator'
+import { StoredDataValidator } from '../../src/StoredDataValidator'
 
-describe("CachedDataValidator", () => {
+describe("StoredDataValidator", () => {
   it('Should validate valid data', async () => {
-    const cachedData = {
+    const storedData = {
       contractAddress: "0x514910771af9ca656af840dff83e8264ecf986ca",
       ref: 'abc123',
       vars: {
@@ -15,7 +15,7 @@ describe("CachedDataValidator", () => {
         js: "const axios = require('axios'); const res = await axios.get(myString); const id = res.data.id; return id * myNum;"
       }
     }
-    expect(CachedDataValidator.isValidCachedData(cachedData)).toBe(true)
+    expect(StoredDataValidator.isValidStoredData(storedData)).toBe(true)
   })
   
   it('Should throw and error for a contract address with an invalid character', () => {
@@ -32,7 +32,7 @@ describe("CachedDataValidator", () => {
         js: "const axios = require('axios'); const res = await axios.get(myString); const id = res.data.id; return id * myNum;"
       }
     }
-    expect(() => { CachedDataValidator.isValidCachedData(badAddr) }).toThrow()
+    expect(() => { StoredDataValidator.isValidStoredData(badAddr) }).toThrow()
   })
 
   it('Should throw an error for a contract address that does not start with 0x', () => {
@@ -49,7 +49,7 @@ describe("CachedDataValidator", () => {
         js: "const axios = require('axios'); const res = await axios.get(myString); const id = res.data.id; return id * myNum;"
       }
     }
-    expect(() => { CachedDataValidator.isValidCachedData(badAddr) }).toThrow()
+    expect(() => { StoredDataValidator.isValidStoredData(badAddr) }).toThrow()
   })
 
   it('Should throw and error for an invalid ref', () => {
@@ -66,7 +66,7 @@ describe("CachedDataValidator", () => {
         js: "const axios = require('axios'); const res = await axios.get(myString); const id = res.data.id; return id * myNum;"
       }
     }
-    expect(() => { CachedDataValidator.isValidCachedData(badRef) }).toThrow()
+    expect(() => { StoredDataValidator.isValidStoredData(badRef) }).toThrow()
   })
 
   it('Should throw and error for a ref with an invalid character', () => {
@@ -83,7 +83,7 @@ describe("CachedDataValidator", () => {
         js: "const axios = require('axios'); const res = await axios.get(myString); const id = res.data.id; return id * myNum;"
       }
     }
-    expect(() => { CachedDataValidator.isValidCachedData(badRef) }).toThrow()
+    expect(() => { StoredDataValidator.isValidStoredData(badRef) }).toThrow()
   })
 
   it('Should throw and error for invalid vars', () => {
@@ -92,17 +92,17 @@ describe("CachedDataValidator", () => {
       ref: 'abc123',
       vars: [ 1, 2, 3 ]
     }
-    expect(() => { CachedDataValidator.isValidCachedData(badVars) }).toThrow()
+    expect(() => { StoredDataValidator.isValidStoredData(badVars) }).toThrow()
   })
 
-  it('Should throw and error for cached data that is too large', () => {
+  it('Should throw and error for stored data that is too large', () => {
     const largeData = {
       contractAddress: "0x514910771af9ca656af840dff83e8264ecf986cg",
       ref: 'abc123',
       vars: [ 1, 2, 3 ],
       js: 'javascriptstring'.repeat(8000000)
     }
-    expect(() => { CachedDataValidator.isValidCachedData(largeData) }).toThrow()
+    expect(() => { StoredDataValidator.isValidStoredData(largeData) }).toThrow()
   })
 })
 

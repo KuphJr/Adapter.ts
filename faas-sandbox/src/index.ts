@@ -3,7 +3,6 @@ import type { ValidOutput } from './Validator'
 import { JavaScriptError } from './Errors'
 import { Sandbox } from './Sandbox'
 import { log } from './logger'
-import type { Request } from 'express'
 
 export interface Result {
   status: string
@@ -16,7 +15,7 @@ export interface Result {
 }
 
 export const createRequest = async (
-  input: Request,
+  input: any,
   callback: (status: number, result: Result) => void
 ) => {
   log('INPUT: ' + JSON.stringify(input))

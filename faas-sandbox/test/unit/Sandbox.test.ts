@@ -13,7 +13,7 @@ import type { Variables } from '../../src/Validator'
 // Just ignore this error.  If all tests pass, the Sandbox is working as expected.
 
 describe("Sandbox", () => {
-  it('Should execute code', async () => {
+  it('Should execute code with external dependency (axios)', async () => {
     const input = {
       vars: {
         myNum: 100,
@@ -28,7 +28,7 @@ describe("Sandbox", () => {
     expect(await Sandbox.evaluate(input.js, input.vars as Variables)).toBe(200)
   })
 
-  it('Should execute async code', async () => {
+  it('Should execute async code with external dependency (axios)', async () => {
     const input = {
       vars: {
         myNum: 100,
@@ -62,7 +62,7 @@ describe("Sandbox", () => {
     expect(await fs.existsSync(path.join(os.tmpdir(), 'res.json'))).toBe(false)
   })
   
-  it('Should throw an runtime error', async () => {
+  it('Should throw an compilation error', async () => {
     const input = {
       vars: {
         myNum: 100,
@@ -80,7 +80,7 @@ describe("Sandbox", () => {
     await expect(async () => { await Sandbox.evaluate(input.js, input.vars as Variables) }).rejects.toBeInstanceOf(JavaScriptCompilationError)
   })
 
-  it('Should throw a compilation error', async () => {
+  it('Should throw a runtime error', async () => {
     const input = {
       vars: {
         myNum: 100,

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 
 import { log } from './logger'
-import { CachedDataValidator } from './CachedDataValidator'
+import { StoredDataValidator } from './StoredDataValidator'
 import { DataStorage } from './GoogleCloudStorage'
 
 export interface Result {
@@ -34,9 +34,8 @@ export const createRequest = async (
     return
   }
   try {
-    if (!CachedDataValidator.isValidCachedData(input)) {
+    if (!StoredDataValidator.isValidStoredData(input))
       throw Error('Input is invalid.')
-    }
   } catch (untypedError) {
     const error = untypedError as Error
     log(error)
@@ -53,7 +52,7 @@ export const createRequest = async (
     return
   }
   // Future Plans: Use a a smart contract to see if the requester paid a set amount
-  // of LINK required to store cached data in the external adapter's database.
+  // of LINK required to store stored data in the external adapter's database.
   const storage = new DataStorage({ publicKey: process.env.PUBLICKEY });
   try {
     await storage.storeData(input)
@@ -84,7 +83,6 @@ exports.gcpservice = async (req: Request, res: Response ) => {
   res.header('Content-Type', 'application/json')
   res.header('Access-Control-Allow-Origin', '*')
   res.header('Access-Control-Allow-Headers', 'Content-Type')
-
   // respond to CORS preflight requests
   if (req.method === 'OPTIONS') {
     res.set('Access-Control-Allow-Methods', 'GET')
