@@ -1,4 +1,5 @@
 import path from 'path'
+import process from 'process';
 import fs from 'fs'
 import os from 'os'
 import { Storage, Bucket } from '@google-cloud/storage';
@@ -17,12 +18,20 @@ export class DataStorage {
   constructor({
     publicKey = '',
     privateKey = '',
-    keyFileName = 'key.json',
     bucketName = 'adapterjs-encrypted-user-data'
   }) {
       this.publicKey = publicKey
       this.privateKey = privateKey
-      this.storage = new Storage({ keyFilename: keyFileName })
+      const gcsPrivateKey = process.env.GCS_PRIVATE_KEY
+      if (!gcsPrivateKey)
+        throw Error("Setup Error: The 'GCS_PRIVATE_KEY' environment variable has not been set.")
+      this.storage = new Storage({
+        projectId: process.env.GCS_PROJECT_ID,
+        credentials: {
+          client_email: process.env.GCS_CLIENT_EMAIL,
+          private_key: gcsPrivateKey.replace(/\\n/g, '\n')
+        }
+      })
       this.bucket = this.storage.bucket(bucketName)
   }
 
