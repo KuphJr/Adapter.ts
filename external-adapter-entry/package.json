@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "start": "tsc && node ./build/app.js"
+    "build": "tsc",
+    "run": "tsc && node ./build/app.js",
+    "start": "node ./build/app.js"
   },
   "author": "KuphJr",
   "license": "ISC",
