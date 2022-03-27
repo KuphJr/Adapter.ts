@@ -28,24 +28,21 @@ class DataStorage {
     }
     storeData(input) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.publicKey === '') {
+            if (this.publicKey === '')
                 throw new Error('Public key has not been provided.');
-            }
             const encryptedObj = Encryptor_1.Encryptor.encrypt(this.publicKey, input);
             const filename = (0, crypto_js_1.SHA256)(input.contractAddress + input.ref).toString() + '.json';
             const file = this.bucket.file(filename);
             const fileExists = yield file.exists();
-            if (fileExists[0]) {
+            if (fileExists[0])
                 throw new Error(`Reference ID ${input.ref} is already in use for contract ${input.contractAddress}.`);
-            }
             yield file.save(JSON.stringify(encryptedObj));
         });
     }
     retrieveData(contractAddress, ref) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.privateKey === '') {
+            if (this.privateKey === '')
                 throw new Error('Private key has not been provided');
-            }
             const filename = (0, crypto_js_1.SHA256)(contractAddress + ref).toString() + '.json';
             const localfile = path_1.default.join(os_1.default.tmpdir(), filename);
             try {
@@ -54,11 +51,11 @@ class DataStorage {
                 }
                 catch (untypedError) {
                     const error = untypedError;
-                    throw new Error(`Unable to fetch cached data: ${error.message}`);
+                    throw new Error(`Unable to fetch stored data: ${error.message}`);
                 }
                 const encryptedObj = JSON.parse(fs_1.default.readFileSync(localfile, { encoding: 'utf8' }));
-                const cachedData = Encryptor_1.Encryptor.decrypt(this.privateKey, contractAddress, ref, encryptedObj);
-                return cachedData;
+                const storedData = Encryptor_1.Encryptor.decrypt(this.privateKey, contractAddress, ref, encryptedObj);
+                return storedData;
             }
             finally {
                 // In the event of a failure, ensure the localfile has been deleted

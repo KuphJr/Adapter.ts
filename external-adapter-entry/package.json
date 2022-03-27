@@ -6,7 +6,6 @@
   "scripts": {
     "test": "jest",
     "build": "tsc",
-    "run": "tsc && node ./build/app.js",
     "start": "node ./build/app.js"
   },
   "author": "KuphJr",

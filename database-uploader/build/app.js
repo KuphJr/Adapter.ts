@@ -39,15 +39,15 @@ app.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     for (const key in req.query) {
         req.body[key] = req.query[key];
     }
-    (0, logger_1.log)('Input: ' + req.body);
     try {
         yield (0, index_1.createRequest)(req.body, (status, result) => {
-            (0, logger_1.log)('Result: ' + result);
+            (0, logger_1.log)('RESULT: ' + JSON.stringify(result));
             res.status(status).json(result);
         });
     }
-    catch (error) {
-        (0, logger_1.log)(error);
+    catch (untypedError) {
+        const error = untypedError;
+        (0, logger_1.log)('ERROR: ' + error.toString());
     }
 }));
 app.listen(port, () => console.log(`Listening on port ${port}!`));

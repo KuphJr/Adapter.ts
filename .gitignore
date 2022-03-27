@@ -5,6 +5,7 @@
 /external-adapter-entry/node_modules
 /external-adapter-entry/cachedResponses
 /external-adapter-entry/build/key.json
+/external-adapter-entry/build/cachedResponses
 /external-adapter-entry/src/key.json
 /external-adapter-entry/key.json
 /faas-sandbox/node_modules

@@ -4,7 +4,8 @@
   "description": "This is a component of Adapter.js which allows users to upload cached data to the external adapter's database where it is encrypted using public key cryptography so it can only be decrypted by the Chainlink node using the 'external-adapter-entry' component.",
   "main": "index.js",
   "scripts": {
-    "start": "tsc && node ./build/app.js",
+    "start": "node ./build/app.js",
+    "build": "tsc",
     "test": "jest"
   },
   "author": "KuphJr",

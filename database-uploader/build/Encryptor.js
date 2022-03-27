@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Encryptor = void 0;
 const crypto_1 = require("crypto");
 const crypto_js_1 = require("crypto-js");
-const CachedDataValidator_1 = require("./CachedDataValidator");
+const StoredDataValidator_1 = require("./StoredDataValidator");
 class Encryptor {
     static encrypt(publicKey, validatedInput) {
         const pemPublicKey = '-----BEGIN RSA PUBLIC KEY-----\n' + publicKey + '\n-----END RSA PUBLIC KEY-----\n';
@@ -22,12 +22,10 @@ class Encryptor {
         const userDataJsonString = crypto_js_1.enc.Utf8.stringify(crypto_js_1.enc.Hex.parse(decryptedUserDataHexString));
         const userData = JSON.parse(userDataJsonString);
         try {
-            if (CachedDataValidator_1.CachedDataValidator.isValidCachedData(userData)) {
+            if (StoredDataValidator_1.StoredDataValidator.isValidStoredData(userData))
                 return userData;
-            }
-            else {
+            else
                 throw Error('Decrypted data is not valid.');
-            }
         }
         catch (untypedError) {
             const error = untypedError;

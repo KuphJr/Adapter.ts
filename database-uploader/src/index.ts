@@ -38,7 +38,7 @@ export const createRequest = async (
       throw Error('Input is invalid.')
   } catch (untypedError) {
     const error = untypedError as Error
-    log(error)
+    log(error.toString())
     callback(500,
       {
         status: 'errored',
@@ -58,7 +58,7 @@ export const createRequest = async (
     await storage.storeData(input)
   } catch (untypedError) {
     const error = untypedError as Error
-    log(error)
+    log(error.toString())
     callback(500,
       {
         status: 'errored',
@@ -97,8 +97,9 @@ exports.gcpservice = async (req: Request, res: Response ) => {
       await createRequest(req.body, (statusCode, data) => {
         res.status(statusCode).send(data)
       })
-    } catch (error) {
-      log('ERROR: ' + error)
+    } catch (untypedError) {
+      const error = untypedError as Error
+      log('ERROR: ' + error.toString())
     }
   }
 }

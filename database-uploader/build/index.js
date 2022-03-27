@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createRequest = void 0;
 const logger_1 = require("./logger");
-const CachedDataValidator_1 = require("./CachedDataValidator");
+const StoredDataValidator_1 = require("./StoredDataValidator");
 const GoogleCloudStorage_1 = require("./GoogleCloudStorage");
 const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, function* () {
     (0, logger_1.log)("INPUT: " + JSON.stringify(input));
@@ -29,13 +29,12 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
         return;
     }
     try {
-        if (!CachedDataValidator_1.CachedDataValidator.isValidCachedData(input)) {
+        if (!StoredDataValidator_1.StoredDataValidator.isValidStoredData(input))
             throw Error('Input is invalid.');
-        }
     }
     catch (untypedError) {
         const error = untypedError;
-        (0, logger_1.log)(error);
+        (0, logger_1.log)(error.toString());
         callback(500, {
             status: 'errored',
             statusCode: 500,
@@ -47,14 +46,14 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
         return;
     }
     // Future Plans: Use a a smart contract to see if the requester paid a set amount
-    // of LINK required to store cached data in the external adapter's database.
+    // of LINK required to store stored data in the external adapter's database.
     const storage = new GoogleCloudStorage_1.DataStorage({ publicKey: process.env.PUBLICKEY });
     try {
         yield storage.storeData(input);
     }
     catch (untypedError) {
         const error = untypedError;
-        (0, logger_1.log)(error);
+        (0, logger_1.log)(error.toString());
         callback(500, {
             status: 'errored',
             statusCode: 500,
@@ -94,8 +93,9 @@ exports.gcpservice = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 res.status(statusCode).send(data);
             });
         }
-        catch (error) {
-            (0, logger_1.log)('ERROR: ' + error);
+        catch (untypedError) {
+            const error = untypedError;
+            (0, logger_1.log)('ERROR: ' + error.toString());
         }
     }
 });

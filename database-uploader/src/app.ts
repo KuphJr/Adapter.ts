@@ -33,14 +33,14 @@ app.post('/', async (req: express.Request, res: express.Response) => {
   for (const key in req.query) {
     req.body[key] = req.query[key]
   }
-  log('Input: ' + req.body)
   try {
     await createRequest(req.body, (status: number, result: Result) => {
-      log('Result: ' + result)
+      log('RESULT: ' + JSON.stringify(result))
       res.status(status).json(result)
     })
-  } catch (error) {
-    log(error)
+  } catch (untypedError) {
+    const error = untypedError as Error
+    log('ERROR: ' + error.toString())
   }
 })
 

@@ -58,6 +58,7 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
         let validCachedData;
         if (validatedInput.contractAddress && validatedInput.ref) {
             validCachedData = yield storage.retrieveData(validatedInput.contractAddress, validatedInput.ref);
+            console.log(JSON.stringify(validCachedData.js));
             if (validCachedData.js)
                 javascriptString = validCachedData.js;
             if (validCachedData.vars)
@@ -71,6 +72,7 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
             jobRunID: validatedInput.id,
             message: `Storage Error: ${error.message}`
         }).toJSONResponse());
+        return;
     }
     // check if the JavaScript should be fetched from IPFS
     if (validatedInput.cid) {
@@ -119,6 +121,7 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
                 message: error.message,
                 details: error.details
             }).toJSONResponse());
+            return;
         }
         else {
             const error = untypedError;
@@ -130,13 +133,14 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
         }
         return;
     }
-    (0, logger_1.log)(`SUCCESS: jobRunId: ${validatedInput.id} result: ${result}`);
+    (0, logger_1.log)(`SUCCESS jobRunId: ${validatedInput.id} result: ${result}`);
     callback(200, {
         jobRunId: validatedInput.id,
         result: result,
         statusCode: 200,
         status: 'ok'
     });
+    return;
 });
 exports.createRequest = createRequest;
 // Export for GCP Functions deployment

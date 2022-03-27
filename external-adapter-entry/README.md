@@ -86,3 +86,8 @@ All the parameters in the `data` object are provided in the on-chain request and
 ## Contact
 
 For suggestions and support, please check out the [Adapter.js Discord community!](https://discord.com/invite/jpGx9tMRWa)
+
+docker build -t adapterjs-entry:0.2.1 .
+
+docker cp ./key.json adapterjs-entry:0.2.1:/key.json
+docker run -p 8032:8032 --env-file=../.env --restart=on-failure adapterjs-entry:0.2.1

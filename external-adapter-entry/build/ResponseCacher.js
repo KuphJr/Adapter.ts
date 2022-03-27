@@ -55,12 +55,9 @@ class ResponseCacher {
                 return;
             }
             const cachedResult = JSON.parse(cachedResultJSONstring);
-            console.log(`CACHED RESULT: ${JSON.stringify(cachedResult)}`);
             if (Validator_1.Validator.isValidOutput(cachedResult.response.result)) {
                 // If a time-to-live (ttl) is specified, only return
                 // the cached data if it is younger than the ttl.
-                console.log("\x1b[31m", `now: ${Date.now()} cachedResultTime: ${cachedResult.timeLastFulfilled} diff: ${(Date.now() - cachedResult.timeLastFulfilled)} ttl: ${timeToLive}`);
-                console.log("\x1b[0m");
                 if (!timeToLive || (Date.now() - cachedResult.timeLastFulfilled) < timeToLive * 1000) {
                     (0, logger_1.log)(`RETURNING CACHED RESULT: ${cachedResult.response}`);
                     callback(200, {

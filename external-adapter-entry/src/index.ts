@@ -68,6 +68,7 @@ export const createRequest = async (
     let validCachedData: ValidStoredData
     if (validatedInput.contractAddress && validatedInput.ref) {
       validCachedData = await storage.retrieveData(validatedInput.contractAddress, validatedInput.ref)
+      console.log(JSON.stringify(validCachedData.js))
       if (validCachedData.js)
         javascriptString = validCachedData.js
       if (validCachedData.vars)
@@ -80,6 +81,7 @@ export const createRequest = async (
       jobRunID: validatedInput.id,
       message: `Storage Error: ${error.message}`
     }).toJSONResponse())
+    return
   }
   // check if the JavaScript should be fetched from IPFS
   if (validatedInput.cid) {
@@ -97,7 +99,8 @@ export const createRequest = async (
     }
   }
   // check if the JavaScript string was provided directly
-  if (validatedInput.js) javascriptString = validatedInput.js
+  if (validatedInput.js)
+    javascriptString = validatedInput.js
   // add any variables that were provided directly
   if (validatedInput.vars) {
     for (const variableName of Object.keys(validatedInput.vars)) {
@@ -125,6 +128,7 @@ export const createRequest = async (
         message: error.message,
         details: error.details
       }).toJSONResponse())
+      return
     } else {
       const error = untypedError as Error
       log(error)
@@ -135,13 +139,14 @@ export const createRequest = async (
     }
     return
   }
-  log(`SUCCESS: jobRunId: ${validatedInput.id} result: ${result}`)
+  log(`SUCCESS jobRunId: ${validatedInput.id} result: ${result}`)
   callback(200, {
     jobRunId: validatedInput.id,
     result: result,
     statusCode: 200,
     status: 'ok'
   })
+  return
 }
 
 // Export for GCP Functions deployment
