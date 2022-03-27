@@ -12,13 +12,16 @@ const logger_1 = require("./logger");
 const Validator_1 = require("./Validator");
 const index_1 = require("./index");
 class ResponseCacher {
-    constructor(persistantStorageDir = path_1.default.join(__dirname, 'cachedResponses'), ramCaching = false, ramStorageDir = 'cachedResponses') {
+    constructor(persistantStorageDir = path_1.default.join(__dirname, '..', 'cachedResponses'), ramCaching = false, ramStorageDir = 'cachedResponses') {
         this.persistantStorageDir = persistantStorageDir;
         this.ramCaching = ramCaching;
         this.ramStorageDir = path_1.default.join(os_1.default.tmpdir(), ramStorageDir);
         // create the required directories if they do not already exist
-        if (!fs_1.default.existsSync(persistantStorageDir))
+        console.log(this.persistantStorageDir);
+        if (!fs_1.default.existsSync(persistantStorageDir)) {
+            (0, logger_1.log)('CREATING PERSISTANT STORAGE DIRECTORY');
             fs_1.default.mkdirSync(persistantStorageDir, { recursive: true });
+        }
         if (this.ramCaching && !fs_1.default.existsSync(this.ramStorageDir))
             fs_1.default.mkdirSync(this.ramStorageDir, { recursive: true });
     }

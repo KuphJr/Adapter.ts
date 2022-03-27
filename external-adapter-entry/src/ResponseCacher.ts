@@ -12,14 +12,17 @@ export class ResponseCacher {
   ramStorageDir: string
 
   constructor(
-    public persistantStorageDir = path.join(__dirname, 'cachedResponses'),
+    public persistantStorageDir = path.join(__dirname, '..', 'cachedResponses'),
     public ramCaching = false,
     ramStorageDir: string = 'cachedResponses'
   ) {
     this.ramStorageDir = path.join(os.tmpdir(), ramStorageDir)
     // create the required directories if they do not already exist
-    if (!fs.existsSync(persistantStorageDir))
+    console.log(this.persistantStorageDir)
+    if (!fs.existsSync(persistantStorageDir)){
+      log('CREATING PERSISTANT STORAGE DIRECTORY')
       fs.mkdirSync(persistantStorageDir, { recursive: true })
+    }
     if (this.ramCaching && !fs.existsSync(this.ramStorageDir))
       fs.mkdirSync(this.ramStorageDir, { recursive: true })
   }
