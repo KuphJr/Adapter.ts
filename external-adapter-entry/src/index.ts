@@ -27,21 +27,19 @@ export interface Error {
 export const createRequest = async (
   input: any,
   callback: (status: number, result: Result) => void
-) => {
+): Promise<void> => {
   log("INPUT: " + JSON.stringify(input))
   // ensure the PRIVATEKEY environmental variable has been set
   if (typeof process.env.PRIVATEKEY !== 'string') {
     log('SETUP ERROR: The PRIVATEKEY environmental variable has not been set')
-    callback(500,
-      {
-        status: 'errored',
-        statusCode: 500,
-        error: {
-          name: 'Setup Error',
-          message: 'The PRIVATEKEY environmental variable has not been set'
-        }
+    callback(500, {
+      status: 'errored',
+      statusCode: 500,
+      error: {
+        name: 'Setup Error',
+        message: 'The PRIVATEKEY environmental variable has not been set'
       }
-    )
+    })
     return
   }
   let validatedInput: ValidInput
@@ -50,16 +48,14 @@ export const createRequest = async (
   } catch (untypedError) {
     const error = untypedError as Error
     log(error)
-    callback(500,
-      {
-        status: 'errored',
-        statusCode: 500,
-        error: {
-          name: 'Validation Error',
-          message: 'Error validating input: ' + error.message
-        }
+    callback(500, {
+      status: 'errored',
+      statusCode: 500,
+      error: {
+        name: 'Validation Error',
+        message: 'Error validating input: ' + error.message
       }
-    )
+    })
     return
   }
   // 'vars' contains the variables that will be passed to the sandbox
@@ -80,12 +76,10 @@ export const createRequest = async (
   } catch (untypedError) {
     const error = untypedError as Error
     log(error)
-    callback(500,
-      new AdapterError({
-        jobRunID: validatedInput.id,
-        message: `Storage Error: ${error.message}`
-      }).toJSONResponse()
-    )
+    callback(500, new AdapterError({
+      jobRunID: validatedInput.id,
+      message: `Storage Error: ${error.message}`
+    }).toJSONResponse())
   }
   // check if the JavaScript should be fetched from IPFS
   if (validatedInput.cid) {
@@ -95,12 +89,10 @@ export const createRequest = async (
     } catch (untypedError) {
       const error = untypedError as Error
       log(error)
-      callback(500,
-        new AdapterError({
+      callback(500, new AdapterError({
           jobRunID: validatedInput.id,
           message: `IPFS Error: ${error.message}`
-        }).toJSONResponse()
-      )
+      }).toJSONResponse())
       return
     }
   }
@@ -114,12 +106,10 @@ export const createRequest = async (
   }
   if (!javascriptString) {
     log(Error('No JavaScript code could be found for the request.'))
-    callback(500,
-      new AdapterError({
+    callback(500, new AdapterError({
         jobRunID: validatedInput.id,
         message: `No JavaScript code could be found for the request.`
-      }).toJSONResponse()
-    )
+    }).toJSONResponse())
     return
   }
   let result: ValidOutput
@@ -129,23 +119,19 @@ export const createRequest = async (
     if ((untypedError as JavaScriptError).name === 'JavaScript Error') {
       const error = untypedError as JavaScriptError
       log(error)
-      callback(500,
-        new JavaScriptError({
-          jobRunID: validatedInput.id,
-          name: error.name,
-          message: error.message,
-          details: error.details
-        }).toJSONResponse()
-      )
+      callback(500, new JavaScriptError({
+        jobRunID: validatedInput.id,
+        name: error.name,
+        message: error.message,
+        details: error.details
+      }).toJSONResponse())
     } else {
       const error = untypedError as Error
       log(error)
-      callback(500,
-        new AdapterError({
-          jobRunID: validatedInput.id,
-          message: error.message
-        }).toJSONResponse()
-      )
+      callback(500, new AdapterError({
+        jobRunID: validatedInput.id,
+        message: error.message
+      }).toJSONResponse())
     }
     return
   }

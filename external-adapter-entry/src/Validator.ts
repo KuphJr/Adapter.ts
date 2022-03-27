@@ -128,7 +128,7 @@ export class Validator {
   }
 
   static validateOutput(type: string, output: unknown): ValidOutput {
-    if (!output)
+    if (typeof output === 'undefined')
       throw Error('The provided JavaScript did not return a value or returned an undefined value.')
     switch (type) {
       case ('bool'):
@@ -168,6 +168,7 @@ export class Validator {
       throw new Error('The output returned by the JavaScript code is larger than 1 KB')
     switch (typeof output) {
       case 'boolean':
+        return true
       case 'string':
       case 'number':
         return true

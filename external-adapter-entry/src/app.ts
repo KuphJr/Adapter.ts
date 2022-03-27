@@ -46,18 +46,25 @@ app.post('/', async (req: express.Request, res: express.Response) => {
       // last identical Adapter.js request.  It will then create a new Adapter.js
       // request to refresh the cache.
       try {
-        const cachedResult = responseCacher.getCachedResult(req.body)
-        res.status(cachedResult.statusCode).json(cachedResult.result)
-      } catch (error) {
-        res.status(500).json(error)
+        responseCacher.getCachedResult(req.body, (status: number, result: Result) => {
+          res.status(status).json(result)
+          log(`RESULT: ${JSON.stringify(result)}`)
+        })
+      } catch (untypedError) {
+        const error = untypedError as Error
+        res.status(500).json(JSON.stringify(error.toString()))
+        log(`ERROR: ${error.toString()}`)
       }
     } else {
       try {
         await createRequest(req.body, (status: number, result: Result) => {
           res.status(status).json(result)
+          log(`RESULT: ${JSON.stringify(result)}`)
         })
-      } catch (error) {
-        log(error)
+      } catch (untypedError) {
+        const error = untypedError as Error
+        res.status(500).json(error.toString())
+        log(`ERROR: ${error.toString()}`)
       }
     }
   }

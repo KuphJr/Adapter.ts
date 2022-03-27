@@ -13,18 +13,22 @@ export class ResponseCacher {
 
   constructor(
     public persistantStorageDir = path.join(__dirname, 'cachedResponses'),
+    public ramCaching = false,
     ramStorageDir: string = 'cachedResponses'
   ) {
     this.ramStorageDir = path.join(os.tmpdir(), ramStorageDir)
     // create the required directories if they do not already exist
     if (!fs.existsSync(persistantStorageDir))
       fs.mkdirSync(persistantStorageDir, { recursive: true })
-    if (!fs.existsSync(this.ramStorageDir))
+    if (this.ramCaching && !fs.existsSync(this.ramStorageDir))
       fs.mkdirSync(this.ramStorageDir, { recursive: true })
   }
 
-  getCachedResult(input: any): Result {
-    log('GetCachedResult INPUT: ' + JSON.stringify(input))
+  getCachedResult(
+    input: any,
+    callback: (status: number, result: Result) => void
+  ): void {
+    log('GETCACHEDRESULT INPUT: ' + JSON.stringify(input))
     const validatedInput = Validator.validateInput(input)
     const timeToLive = validatedInput.ttl
     // don't include the ttl in the object hash
@@ -33,7 +37,7 @@ export class ResponseCacher {
     const filename = SHA256(JSON.stringify(validatedInput)) + '.json'
     let cachedResultJSONstring: string
     try {
-      if (fs.existsSync(path.join(this.ramStorageDir, filename))) {
+      if (this.ramCaching && fs.existsSync(path.join(this.ramStorageDir, filename))) {
         // If the cached result exists in RAM storage, use that.
         cachedResultJSONstring = fs.readFileSync(
           path.join(this.ramStorageDir, filename), {encoding: 'utf8'}
@@ -44,33 +48,66 @@ export class ResponseCacher {
           path.join(this.persistantStorageDir, filename), {encoding: 'utf8'}
         )
       } else {
-        // If no cached result has been found, throw an error.
-        throw Error('No current data for that request. The cache is now waiting to be filled.')
-        // Instead of throwing an error, there should be some sort of 'Dummy response' that can be set by the user in the initial request or if ttl is exceeded
+        // If no cached result has been found, send back an error.
+        /** @TODO Instead of throwing an error, should there be some sort of 'Dummy response'
+         * that can be set by the user in the initial request or if ttl is exceeded? */
+        callback(500, {
+          status: 'errored',
+          statusCode: 500,
+          error: {
+            name: 'Cold cache',
+            message: 'No current data for that request. The cache is being filled.'
+          }
+        })
+        return
       }
       const cachedResult = JSON.parse(cachedResultJSONstring)
-      if (Validator.isValidOutput(cachedResult.result)) {
+      if (Validator.isValidOutput(cachedResult.response.result)) {
         // If a time-to-live (ttl) is specified, only return
         // the cached data if it is younger than the ttl.
-        if (!timeToLive ||
-            (timeToLive && (Date.now() - cachedResult.POSIXtime) < timeToLive))
-          return cachedResult.result
-        else
-          throw Error('The cached data is older than the ttl.')
+        if (!timeToLive || (Date.now() - cachedResult.timeLastFulfilled) < timeToLive * 1000) {
+          log(`RETURNING CACHED RESULT: ${cachedResult.response}`)
+          callback(200, {
+            jobRunId: validatedInput.id,
+            result: cachedResult.response.result,
+            statusCode: 200,
+            status: 'ok'
+          })
+          return
+        } else {
+          callback(500, {
+            status: 'errored',
+            statusCode: 500,
+            error: {
+              name: 'Time to live exceeded',
+              message: 'The cached data is older than the ttl. The cache is being filled with fresh data.'
+            }
+          })
+          return
+        }
       }
-      throw Error('The cached result is invalid.')
+      callback(500, {
+        status: 'errored',
+        statusCode: 500,
+        error: {
+          name: 'Invalid result',
+          message: 'The cached result is invalid.'
+        }
+      })
+      return
     } finally {
       // Make a new Adapter.js request to refresh the cache.
-      createRequest(input, (status: number, result: Result) => {
+      createRequest(input, (status: number, response: Result) => {
         if (status === 200) {
           const cachedResultString = JSON.stringify({
             // Record the time the cache was last filled
-            POSIXtime: Date.now(),
-            result
+            timeLastFulfilled: Date.now(),
+            response
           })
           log('FILLING CACHE: ' + cachedResultString)
           try {
-            fs.writeFileSync(path.join(this.ramStorageDir, filename), cachedResultString)
+            if (this.ramCaching)
+              fs.writeFileSync(path.join(this.ramStorageDir, filename), cachedResultString)
           } catch (_) {
             log('ERROR FILLING CACHE: COULD NOT WRITE TO RAM CACHE')
           }
@@ -80,7 +117,7 @@ export class ResponseCacher {
             log('ERROR FILLING CACHE: COULD NOT WRITE TO DISK CACHE')
           }
         } else {
-          log('ERROR FILLING CACHE: ' + JSON.stringify(result))
+          log('ERROR FILLING CACHE: ' + JSON.stringify(response))
         }
       })
     }

@@ -12,17 +12,18 @@ const logger_1 = require("./logger");
 const Validator_1 = require("./Validator");
 const index_1 = require("./index");
 class ResponseCacher {
-    constructor(persistantStorageDir = path_1.default.join(__dirname, 'cachedResponses'), ramStorageDir = 'cachedResponses') {
+    constructor(persistantStorageDir = path_1.default.join(__dirname, 'cachedResponses'), ramCaching = false, ramStorageDir = 'cachedResponses') {
         this.persistantStorageDir = persistantStorageDir;
+        this.ramCaching = ramCaching;
         this.ramStorageDir = path_1.default.join(os_1.default.tmpdir(), ramStorageDir);
         // create the required directories if they do not already exist
         if (!fs_1.default.existsSync(persistantStorageDir))
             fs_1.default.mkdirSync(persistantStorageDir, { recursive: true });
-        if (!fs_1.default.existsSync(this.ramStorageDir))
+        if (this.ramCaching && !fs_1.default.existsSync(this.ramStorageDir))
             fs_1.default.mkdirSync(this.ramStorageDir, { recursive: true });
     }
-    getCachedResult(input) {
-        (0, logger_1.log)('GetCachedResult INPUT: ' + JSON.stringify(input));
+    getCachedResult(input, callback) {
+        (0, logger_1.log)('GETCACHEDRESULT INPUT: ' + JSON.stringify(input));
         const validatedInput = Validator_1.Validator.validateInput(input);
         const timeToLive = validatedInput.ttl;
         // don't include the ttl in the object hash
@@ -31,7 +32,7 @@ class ResponseCacher {
         const filename = (0, crypto_js_1.SHA256)(JSON.stringify(validatedInput)) + '.json';
         let cachedResultJSONstring;
         try {
-            if (fs_1.default.existsSync(path_1.default.join(this.ramStorageDir, filename))) {
+            if (this.ramCaching && fs_1.default.existsSync(path_1.default.join(this.ramStorageDir, filename))) {
                 // If the cached result exists in RAM storage, use that.
                 cachedResultJSONstring = fs_1.default.readFileSync(path_1.default.join(this.ramStorageDir, filename), { encoding: 'utf8' });
             }
@@ -40,34 +41,71 @@ class ResponseCacher {
                 cachedResultJSONstring = fs_1.default.readFileSync(path_1.default.join(this.persistantStorageDir, filename), { encoding: 'utf8' });
             }
             else {
-                // If no cached result has been found, throw an error.
-                throw Error('No current data for that request. The cache is now waiting to be filled.');
-                // Instead of throwing an error, there should be some sort of 'Dummy response' that can be set by the user in the initial request or if ttl is exceeded
+                // If no cached result has been found, send back an error.
+                /** @TODO Instead of throwing an error, should there be some sort of 'Dummy response'
+                 * that can be set by the user in the initial request or if ttl is exceeded? */
+                callback(500, {
+                    status: 'errored',
+                    statusCode: 500,
+                    error: {
+                        name: 'Cold cache',
+                        message: 'No current data for that request. The cache is being filled.'
+                    }
+                });
+                return;
             }
             const cachedResult = JSON.parse(cachedResultJSONstring);
-            if (Validator_1.Validator.isValidOutput(cachedResult.result)) {
+            console.log(`CACHED RESULT: ${JSON.stringify(cachedResult)}`);
+            if (Validator_1.Validator.isValidOutput(cachedResult.response.result)) {
                 // If a time-to-live (ttl) is specified, only return
                 // the cached data if it is younger than the ttl.
-                if (!timeToLive ||
-                    (timeToLive && (Date.now() - cachedResult.POSIXtime) < timeToLive))
-                    return cachedResult.result;
-                else
-                    throw Error('The cached data is older than the ttl.');
+                console.log("\x1b[31m", `now: ${Date.now()} cachedResultTime: ${cachedResult.timeLastFulfilled} diff: ${(Date.now() - cachedResult.timeLastFulfilled)} ttl: ${timeToLive}`);
+                console.log("\x1b[0m");
+                if (!timeToLive || (Date.now() - cachedResult.timeLastFulfilled) < timeToLive * 1000) {
+                    (0, logger_1.log)(`RETURNING CACHED RESULT: ${cachedResult.response}`);
+                    callback(200, {
+                        jobRunId: validatedInput.id,
+                        result: cachedResult.response.result,
+                        statusCode: 200,
+                        status: 'ok'
+                    });
+                    return;
+                }
+                else {
+                    callback(500, {
+                        status: 'errored',
+                        statusCode: 500,
+                        error: {
+                            name: 'Time to live exceeded',
+                            message: 'The cached data is older than the ttl. The cache is being filled with fresh data.'
+                        }
+                    });
+                    return;
+                }
             }
-            throw Error('The cached result is invalid.');
+            callback(500, {
+                status: 'errored',
+                statusCode: 500,
+                error: {
+                    name: 'Invalid result',
+                    message: 'The cached result is invalid.'
+                }
+            });
+            return;
         }
         finally {
             // Make a new Adapter.js request to refresh the cache.
-            (0, index_1.createRequest)(input, (status, result) => {
+            (0, index_1.createRequest)(input, (status, response) => {
                 if (status === 200) {
                     const cachedResultString = JSON.stringify({
                         // Record the time the cache was last filled
-                        POSIXtime: Date.now(),
-                        result
+                        timeLastFulfilled: Date.now(),
+                        response
                     });
                     (0, logger_1.log)('FILLING CACHE: ' + cachedResultString);
                     try {
-                        fs_1.default.writeFileSync(path_1.default.join(this.ramStorageDir, filename), cachedResultString);
+                        if (this.ramCaching)
+                            fs_1.default.writeFileSync(path_1.default.join(this.ramStorageDir, filename), cachedResultString);
                     }
                     catch (_) {
                         (0, logger_1.log)('ERROR FILLING CACHE: COULD NOT WRITE TO RAM CACHE');
@@ -80,7 +118,7 @@ class ResponseCacher {
                     }
                 }
                 else {
-                    (0, logger_1.log)('ERROR FILLING CACHE: ' + JSON.stringify(result));
+                    (0, logger_1.log)('ERROR FILLING CACHE: ' + JSON.stringify(response));
                 }
             });
         }

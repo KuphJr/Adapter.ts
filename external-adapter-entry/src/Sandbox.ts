@@ -20,11 +20,7 @@ export class Sandbox {
         js: javascriptString,
         vars: vars
       })
-      const result = data.result
-      if (Validator.validateOutput(type, result))
-        return result
-      else
-        throw new Error('Invalid Output')
+      return Validator.validateOutput(type, data.result)
     } catch (error: any) {
       log(error)
       if (error?.response?.data?.error) {

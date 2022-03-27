@@ -53,21 +53,28 @@ app.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             // last identical Adapter.js request.  It will then create a new Adapter.js
             // request to refresh the cache.
             try {
-                const cachedResult = responseCacher.getCachedResult(req.body);
-                res.status(cachedResult.statusCode).json(cachedResult.result);
+                responseCacher.getCachedResult(req.body, (status, result) => {
+                    res.status(status).json(result);
+                    (0, logger_1.log)(`RESULT: ${JSON.stringify(result)}`);
+                });
             }
-            catch (error) {
-                res.status(500).json(error);
+            catch (untypedError) {
+                const error = untypedError;
+                res.status(500).json(JSON.stringify(error.toString()));
+                (0, logger_1.log)(`ERROR: ${error.toString()}`);
             }
         }
         else {
             try {
                 yield (0, index_1.createRequest)(req.body, (status, result) => {
                     res.status(status).json(result);
+                    (0, logger_1.log)(`RESULT: ${JSON.stringify(result)}`);
                 });
             }
-            catch (error) {
-                (0, logger_1.log)(error);
+            catch (untypedError) {
+                const error = untypedError;
+                res.status(500).json(error.toString());
+                (0, logger_1.log)(`ERROR: ${error.toString()}`);
             }
         }
     }
