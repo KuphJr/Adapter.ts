@@ -14,16 +14,26 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DataStorage = void 0;
 const path_1 = __importDefault(require("path"));
+const process_1 = __importDefault(require("process"));
 const fs_1 = __importDefault(require("fs"));
 const os_1 = __importDefault(require("os"));
 const storage_1 = require("@google-cloud/storage");
 const crypto_js_1 = require("crypto-js");
 const Encryptor_1 = require("./Encryptor");
 class DataStorage {
-    constructor({ publicKey = '', privateKey = '', keyFileName = 'key.json', bucketName = 'adapterjs-encrypted-user-data' }) {
+    constructor({ publicKey = '', privateKey = '', bucketName = 'adapterjs-encrypted-user-data' }) {
         this.publicKey = publicKey;
         this.privateKey = privateKey;
-        this.storage = new storage_1.Storage({ keyFilename: keyFileName });
+        const gcsPrivateKey = process_1.default.env.GCS_PRIVATE_KEY;
+        if (!gcsPrivateKey)
+            throw Error("Setup Error: The 'GCS_PRIVATE_KEY' environment variable has not been set.");
+        this.storage = new storage_1.Storage({
+            projectId: process_1.default.env.GCS_PROJECT_ID,
+            credentials: {
+                client_email: process_1.default.env.GCS_CLIENT_EMAIL,
+                private_key: gcsPrivateKey.replace(/\\n/g, '\n')
+            }
+        });
         this.bucket = this.storage.bucket(bucketName);
     }
     storeData(input) {
