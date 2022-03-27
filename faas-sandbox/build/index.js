@@ -79,3 +79,31 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
     });
 });
 exports.createRequest = createRequest;
+// Export for GCP Functions deployment
+exports.gcpservice = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // set JSON content type and CORS headers for the response
+    res.header('Content-Type', 'application/json');
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    // respond to CORS preflight requests
+    if (req.method === 'OPTIONS') {
+        res.set('Access-Control-Allow-Methods', 'GET');
+        res.set('Access-Control-Allow-Headers', 'Content-Type');
+        res.set('Access-Control-Max-Age', '3600');
+        res.status(204).send('');
+    }
+    else {
+        for (const key in req.query) {
+            req.body[key] = req.query[key];
+        }
+        try {
+            yield (0, exports.createRequest)(req.body, (statusCode, data) => {
+                res.status(statusCode).send(data);
+            });
+        }
+        catch (untypedError) {
+            const error = untypedError;
+            (0, logger_1.log)('ERROR: ' + error.toString());
+        }
+    }
+});

@@ -1,3 +1,5 @@
+import { Request, Response } from 'express'
+
 import { Validator } from './Validator'
 import type { ValidOutput } from './Validator'
 import { JavaScriptError } from './Errors'
@@ -78,4 +80,31 @@ export const createRequest = async (
     statusCode: 200,
     result: output,
   })
+}
+
+// Export for GCP Functions deployment
+exports.gcpservice = async (req: Request, res: Response ) => {
+  // set JSON content type and CORS headers for the response
+  res.header('Content-Type', 'application/json')
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Headers', 'Content-Type')
+  // respond to CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    res.set('Access-Control-Allow-Methods', 'GET')
+    res.set('Access-Control-Allow-Headers', 'Content-Type')
+    res.set('Access-Control-Max-Age', '3600')
+    res.status(204).send('')
+  } else {
+    for (const key in req.query) {
+      req.body[key] = req.query[key]
+    }
+    try {
+      await createRequest(req.body, (statusCode, data) => {
+        res.status(statusCode).send(data)
+      })
+    } catch (untypedError) {
+      const error = untypedError as Error
+      log('ERROR: ' + error.toString())
+    }
+  }
 }
