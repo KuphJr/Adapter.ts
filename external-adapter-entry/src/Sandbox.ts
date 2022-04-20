@@ -7,6 +7,7 @@ import type { Variables } from './Validator'
 
 export class Sandbox {
   static async evaluate (
+    nodeKey: string,
     type: string,
     javascriptString: string,
     vars: Variables
@@ -17,6 +18,7 @@ export class Sandbox {
     }
     try {
       const { data } = await axios.post(sandboxUrl, {
+        nodeKey,
         js: javascriptString,
         vars: vars
       })

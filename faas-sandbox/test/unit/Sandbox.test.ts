@@ -4,8 +4,7 @@ import path from 'path'
 import dotenv from 'dotenv'
 dotenv.config({ path: path.join(__dirname, '..', '..', '..', '.env')})
 
-import { Sandbox } from '../../src/Sandbox'
-import { JavaScriptRuntimeError, JavaScriptCompilationError } from '../../src/Errors'
+import { Sandbox, JavaScriptRuntimeError, JavaScriptCompilationError } from '../../src/Sandbox'
 import type { Variables } from '../../src/Validator'
 
 // NOTE: If these tests all pass, but there is an error message 'Error: ENOENT: no such file or directory', this is because

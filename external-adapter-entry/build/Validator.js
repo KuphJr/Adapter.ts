@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Validator = void 0;
-const process = require('process');
 class Validator {
     constructor() { }
     static validateInput(input) {
@@ -26,7 +25,7 @@ class Validator {
                 throw Error("Invalid value for the parameter 'type' which must be either " +
                     "'bool', 'uint', 'uint256', 'int', 'int256', 'bytes32', 'string', 'bytes' or 'byte[]'.");
         }
-        const validatedInput = { type: input.data.type };
+        const validatedInput = { nodeKey: input.nodeKey, type: input.data.type };
         // validate id
         if (!input.id)
             input.id = '1';
@@ -64,7 +63,7 @@ class Validator {
             validatedInput.ref = input.data.ref;
             if (typeof ((_b = (_a = input.meta) === null || _a === void 0 ? void 0 : _a.oracleRequest) === null || _b === void 0 ? void 0 : _b.requester) !== 'string')
                 throw Error("Invalid jobspec setup.  Parameter 'meta.oracleRequest.requester' is required when referencing stored data.");
-            validatedInput.contractAddress = input.meta.oracleRequest.requester;
+            validatedInput.contractAddress = input.meta.oracleRequest.requester.toLowerCase();
         }
         // validate cached & ttl
         if (input.data.cached) {

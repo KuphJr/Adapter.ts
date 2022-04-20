@@ -1,5 +1,4 @@
 import path from 'path'
-import os from 'os'
 import fs from 'fs'
 import { SHA256 } from 'crypto-js'
 
@@ -7,28 +6,22 @@ import { log } from './logger'
 import { Validator } from './Validator'
 import { createRequest } from './index'
 import type { Result } from './index'
+import { DataStorage } from './GoogleCloudStorage'
+import { IpfsFetcher } from './IpfsFetcher'
 
 export class ResponseCacher {
-  ramStorageDir: string
-
-  constructor(
-    public persistantStorageDir = path.join(__dirname, '..', 'cachedResponses'),
-    public ramCaching = false,
-    ramStorageDir: string = 'cachedResponses'
-  ) {
-    this.ramStorageDir = path.join(os.tmpdir(), ramStorageDir)
-    // create the required directories if they do not already exist
-    console.log(this.persistantStorageDir)
+  constructor(public persistantStorageDir = path.join(__dirname, '..', 'cache', 'cachedResponses')) {
+    // create the required directory if it doesn't exist
     if (!fs.existsSync(persistantStorageDir)){
-      log('CREATING PERSISTANT STORAGE DIRECTORY')
+      log('CREATING PERSISTANT cachedResponses STORAGE DIRECTORY')
       fs.mkdirSync(persistantStorageDir, { recursive: true })
     }
-    if (this.ramCaching && !fs.existsSync(this.ramStorageDir))
-      fs.mkdirSync(this.ramStorageDir, { recursive: true })
   }
 
   getCachedResult(
     input: any,
+    ipfsFetcher: IpfsFetcher,
+    dataStorage: DataStorage,
     callback: (status: number, result: Result) => void
   ): void {
     log('GETCACHEDRESULT INPUT: ' + JSON.stringify(input))
@@ -40,12 +33,7 @@ export class ResponseCacher {
     const filename = SHA256(JSON.stringify(validatedInput)) + '.json'
     let cachedResultJSONstring: string
     try {
-      if (this.ramCaching && fs.existsSync(path.join(this.ramStorageDir, filename))) {
-        // If the cached result exists in RAM storage, use that.
-        cachedResultJSONstring = fs.readFileSync(
-          path.join(this.ramStorageDir, filename), {encoding: 'utf8'}
-        )
-      } else if (fs.existsSync(path.join(this.persistantStorageDir, filename))) {
+      if (fs.existsSync(path.join(this.persistantStorageDir, filename))) {
         // If the cached result exists in persistant storage, use that.
         cachedResultJSONstring = fs.readFileSync(
           path.join(this.persistantStorageDir, filename), {encoding: 'utf8'}
@@ -100,29 +88,25 @@ export class ResponseCacher {
       return
     } finally {
       // Make a new Adapter.js request to refresh the cache.
-      createRequest(input, (status: number, response: Result) => {
-        if (status === 200) {
-          const cachedResultString = JSON.stringify({
-            // Record the time the cache was last filled
-            timeLastFulfilled: Date.now(),
-            response
-          })
-          log('FILLING CACHE: ' + cachedResultString)
-          try {
-            if (this.ramCaching)
-              fs.writeFileSync(path.join(this.ramStorageDir, filename), cachedResultString)
-          } catch (_) {
-            log('ERROR FILLING CACHE: COULD NOT WRITE TO RAM CACHE')
+      createRequest(input, ipfsFetcher, dataStorage,
+        (status: number, response: Result) => {
+          if (status === 200) {
+            const cachedResultString = JSON.stringify({
+              // Record the time the cache was last filled
+              timeLastFulfilled: Date.now(),
+              response
+            })
+            log('FILLING CACHE: ' + cachedResultString)
+            try {
+              fs.writeFileSync(path.join(this.persistantStorageDir, filename), cachedResultString)
+            } catch (_) {
+              log('ERROR FILLING CACHE: COULD NOT WRITE TO DISK')
+            }
+          } else {
+            log('ERROR FILLING CACHE: ' + JSON.stringify(response))
           }
-          try {
-            fs.writeFileSync(path.join(this.persistantStorageDir, filename), cachedResultString)
-          } catch (_) {
-            log('ERROR FILLING CACHE: COULD NOT WRITE TO DISK CACHE')
-          }
-        } else {
-          log('ERROR FILLING CACHE: ' + JSON.stringify(response))
         }
-      })
+      )
     }
   }
 }

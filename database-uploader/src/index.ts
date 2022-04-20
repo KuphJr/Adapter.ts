@@ -78,7 +78,7 @@ export const createRequest = async (
 }
 
 // Export for GCP Functions deployment
-exports.gcpservice = async (req: Request, res: Response ) => {
+exports.uploader = async (req: Request, res: Response ) => {
   // set JSON content type and CORS headers for the response
   res.header('Content-Type', 'application/json')
   res.header('Access-Control-Allow-Origin', '*')

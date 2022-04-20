@@ -12,11 +12,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createRequest = void 0;
 const logger_1 = require("./logger");
 const Validator_1 = require("./Validator");
-const GoogleCloudStorage_1 = require("./GoogleCloudStorage");
-const IpfsFetcher_1 = require("./IpfsFetcher");
 const Errors_1 = require("./Errors");
 const Sandbox_1 = require("./Sandbox");
-const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, function* () {
+const createRequest = (input, ipfsFetcher, dataStorage, callback) => __awaiter(void 0, void 0, void 0, function* () {
     (0, logger_1.log)("INPUT: " + JSON.stringify(input));
     // ensure the PRIVATEKEY environmental variable has been set
     if (typeof process.env.PRIVATEKEY !== 'string') {
@@ -54,10 +52,9 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
     let javascriptString;
     // check if any cached data should be fetched from the adapter's database
     try {
-        const storage = new GoogleCloudStorage_1.DataStorage({ privateKey: process.env.PRIVATEKEY });
         let validCachedData;
         if (validatedInput.contractAddress && validatedInput.ref) {
-            validCachedData = yield storage.retrieveData(validatedInput.contractAddress, validatedInput.ref);
+            validCachedData = yield dataStorage.retrieveData(validatedInput.contractAddress, validatedInput.ref);
             console.log(JSON.stringify(validCachedData.js));
             if (validCachedData.js)
                 javascriptString = validCachedData.js;
@@ -77,8 +74,7 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
     // check if the JavaScript should be fetched from IPFS
     if (validatedInput.cid) {
         try {
-            javascriptString = yield IpfsFetcher_1.IpfsFetcher
-                .fetchJavaScriptString(validatedInput.cid);
+            javascriptString = yield ipfsFetcher.fetchJavaScriptString(validatedInput.cid);
         }
         catch (untypedError) {
             const error = untypedError;
@@ -109,7 +105,7 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
     }
     let result;
     try {
-        result = yield Sandbox_1.Sandbox.evaluate(validatedInput.type, javascriptString, vars);
+        result = yield Sandbox_1.Sandbox.evaluate(validatedInput.nodeKey, validatedInput.type, javascriptString, vars);
     }
     catch (untypedError) {
         if (untypedError.name === 'JavaScript Error') {
@@ -143,30 +139,3 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
     return;
 });
 exports.createRequest = createRequest;
-// Export for GCP Functions deployment
-exports.gcpservice = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // set JSON content type and CORS headers for the response
-    res.header('Content-Type', 'application/json');
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
-    // respond to CORS preflight requests
-    if (req.method === 'OPTIONS') {
-        res.set('Access-Control-Allow-Methods', 'GET');
-        res.set('Access-Control-Allow-Headers', 'Content-Type');
-        res.set('Access-Control-Max-Age', '3600');
-        res.status(204).send('');
-    }
-    else {
-        for (const key in req.query) {
-            req.body[key] = req.query[key];
-        }
-        try {
-            yield (0, exports.createRequest)(req.body, (statusCode, data) => {
-                res.status(statusCode).send(data);
-            });
-        }
-        catch (error) {
-            (0, logger_1.log)(error);
-        }
-    }
-});

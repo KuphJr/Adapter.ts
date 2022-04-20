@@ -18,7 +18,7 @@ const process_1 = __importDefault(require("process"));
 const logger_1 = require("./logger");
 const Validator_1 = require("./Validator");
 class Sandbox {
-    static evaluate(type, javascriptString, vars) {
+    static evaluate(nodeKey, type, javascriptString, vars) {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             const sandboxUrl = process_1.default.env.SANDBOXURL;
@@ -27,6 +27,7 @@ class Sandbox {
             }
             try {
                 const { data } = yield axios_1.default.post(sandboxUrl, {
+                    nodeKey,
                     js: javascriptString,
                     vars: vars
                 });

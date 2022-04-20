@@ -1,10 +1,13 @@
-import { Request, Response } from 'express'
+import process from 'process'
 
+import { Request, Response } from 'express'
 import { Validator } from './Validator'
 import type { ValidOutput } from './Validator'
-import { JavaScriptError } from './Errors'
+import type { JavaScriptError } from './Sandbox'
 import { Sandbox } from './Sandbox'
-import { log } from './logger'
+
+if (!process.env.NODEKEY)
+  throw Error('A unique node key must be set using the environment variable NODEKEY.')
 
 export interface Result {
   status: string
@@ -13,6 +16,12 @@ export interface Result {
   error?: {
     name: string
     message: string
+  }
+}
+
+export const log = (itemToLog: any): void => {
+  if (process.env.LOGGING) {
+    console.log(itemToLog)
   }
 }
 
@@ -83,7 +92,7 @@ export const createRequest = async (
 }
 
 // Export for GCP Functions deployment
-exports.gcpservice = async (req: Request, res: Response ) => {
+exports.sandbox = async (req: Request, res: Response ) => {
   // set JSON content type and CORS headers for the response
   res.header('Content-Type', 'application/json')
   res.header('Access-Control-Allow-Origin', '*')
@@ -98,13 +107,20 @@ exports.gcpservice = async (req: Request, res: Response ) => {
     for (const key in req.query) {
       req.body[key] = req.query[key]
     }
+    log('Input: ' + req.body)
+    // Check to make sure the request is authorized
+    if (req.body.nodeKey != process.env.NODEKEY) {
+      res.status(401).json({ error: 'The nodeKey is invalid.' })
+      log(`INVALID NODEKEY: ${req.body?.nodeKey}`)
+      return
+    }
     try {
-      await createRequest(req.body, (statusCode, data) => {
-        res.status(statusCode).send(data)
+      await createRequest(req.body, (status: number, result: Result): void => {
+        log('Result: ' + JSON.stringify(result))
+        res.status(status).json(result)
       })
-    } catch (untypedError) {
-      const error = untypedError as Error
-      log('ERROR: ' + error.toString())
+    } catch (error) {
+      log(error)
     }
   }
 }

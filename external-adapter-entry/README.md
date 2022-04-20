@@ -2,7 +2,24 @@
 
 ## Installation Instructions
 
+Pull the Docker image.
+`docker pull kuphjr/adapter.js`
 
+Set the environment variables in a .env file.
+```
+PUBLICKEY=This is the public key generated using the `generateKeys` tool.
+PRIVATEKEY=This is the public key generated using the `generateKeys` tool.
+LOGGING=true
+NODEKEY=this should be a private unique string used to authenticate requests.
+SANDBOXURL=This is the url of the deployed `faas-sandbox` component (make sure to include https://).
+WEB3STORAGETOKEN=A token from https://web3.storage/.
+GCS_PROJECT_ID=This is the Google Cloud project ID copied from the Google Cloud key.json file.
+GCS_CLIENT_EMAIL=This is the email copied from the Google Cloud key.json file.
+GCS_PRIVATE_KEY=This is the private key copied from the Google Cloud key.json file.
+```
+
+Run the Docker image.
+`docker run -p 8032:8032 -v {Path to any empty folder. This will be used to store cached data.}:/app/cache --env-file={path to env file} --restart=on-failure adapterjs-entry:0.2.`
 
 ## Adapter.js Entry
 
@@ -89,4 +106,4 @@ For suggestions and support, please check out the [Adapter.js Discord community!
 
 docker build -t adapterjs-entry:0.2.1 .
 
-docker run -p 8032:8032 --env-file=../.env --restart=on-failure adapterjs-entry:0.2.1
+docker run -p 8032:8032 -v C:/Users/kuphjr/Documents/cache:/app/cache --env-file=../.env --restart=on-failure adapterjs-entry:0.2.1

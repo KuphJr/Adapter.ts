@@ -72,7 +72,7 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
 });
 exports.createRequest = createRequest;
 // Export for GCP Functions deployment
-exports.gcpservice = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.uploader = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // set JSON content type and CORS headers for the response
     res.header('Content-Type', 'application/json');
     res.header('Access-Control-Allow-Origin', '*');

@@ -26,6 +26,8 @@ export interface Error {
 
 export const createRequest = async (
   input: any,
+  ipfsFetcher: IpfsFetcher,
+  dataStorage: DataStorage,
   callback: (status: number, result: Result) => void
 ): Promise<void> => {
   log("INPUT: " + JSON.stringify(input))
@@ -64,10 +66,9 @@ export const createRequest = async (
   let javascriptString: string | undefined
   // check if any cached data should be fetched from the adapter's database
   try {
-    const storage = new DataStorage({ privateKey: process.env.PRIVATEKEY })
     let validCachedData: ValidStoredData
     if (validatedInput.contractAddress && validatedInput.ref) {
-      validCachedData = await storage.retrieveData(validatedInput.contractAddress, validatedInput.ref)
+      validCachedData = await dataStorage.retrieveData(validatedInput.contractAddress, validatedInput.ref)
       console.log(JSON.stringify(validCachedData.js))
       if (validCachedData.js)
         javascriptString = validCachedData.js
@@ -86,8 +87,7 @@ export const createRequest = async (
   // check if the JavaScript should be fetched from IPFS
   if (validatedInput.cid) {
     try {
-      javascriptString = await IpfsFetcher
-        .fetchJavaScriptString(validatedInput.cid)
+      javascriptString = await ipfsFetcher.fetchJavaScriptString(validatedInput.cid)
     } catch (untypedError) {
       const error = untypedError as Error
       log(error)
@@ -117,7 +117,7 @@ export const createRequest = async (
   }
   let result: ValidOutput
   try {
-    result = await Sandbox.evaluate(validatedInput.type, javascriptString, vars)
+    result = await Sandbox.evaluate(validatedInput.nodeKey, validatedInput.type, javascriptString, vars)
   } catch (untypedError) {
     if ((untypedError as JavaScriptError).name === 'JavaScript Error') {
       const error = untypedError as JavaScriptError
@@ -147,30 +147,4 @@ export const createRequest = async (
     status: 'ok'
   })
   return
-}
-
-// Export for GCP Functions deployment
-exports.gcpservice = async (req: Request, res: Response ) => {
-  // set JSON content type and CORS headers for the response
-  res.header('Content-Type', 'application/json')
-  res.header('Access-Control-Allow-Origin', '*')
-  res.header('Access-Control-Allow-Headers', 'Content-Type')
-  // respond to CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    res.set('Access-Control-Allow-Methods', 'GET')
-    res.set('Access-Control-Allow-Headers', 'Content-Type')
-    res.set('Access-Control-Max-Age', '3600')
-    res.status(204).send('')
-  } else {
-    for (const key in req.query) {
-      req.body[key] = req.query[key]
-    }
-    try {
-      await createRequest(req.body, (statusCode, data) => {
-        res.status(statusCode).send(data)
-      })
-    } catch (error) {
-      log(error)
-    }
-  }
 }

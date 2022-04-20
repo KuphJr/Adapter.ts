@@ -12,12 +12,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Sandbox = void 0;
+exports.JavaScriptRuntimeError = exports.JavaScriptCompilationError = exports.JavaScriptError = exports.Sandbox = void 0;
 const fs_1 = __importDefault(require("fs"));
 const os_1 = __importDefault(require("os"));
 const path_1 = __importDefault(require("path"));
 const vm2_1 = require("vm2");
-const Errors_1 = require("./Errors");
 class Sandbox {
     static evaluate(javascriptString, vars) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -40,7 +39,7 @@ class Sandbox {
             }
             catch (untypedError) {
                 const error = untypedError;
-                throw new Errors_1.JavaScriptCompilationError({
+                throw new JavaScriptCompilationError({
                     name: error.name,
                     message: error.message,
                     details: error.stack
@@ -55,7 +54,7 @@ class Sandbox {
             }
             catch (untypedError) {
                 const error = untypedError;
-                throw new Errors_1.JavaScriptRuntimeError({
+                throw new JavaScriptRuntimeError({
                     name: error.name,
                     message: error.message,
                     details: error.stack
@@ -83,3 +82,32 @@ class Sandbox {
     }
 }
 exports.Sandbox = Sandbox;
+class JavaScriptError {
+    constructor({ status = 'errored', statusCode = 500, name = 'JavaScript Error', message = 'An error occurred', details = '' }, errorName) {
+        this.status = status;
+        this.statusCode = statusCode;
+        this.name = errorName + ': ' + name;
+        this.message = message;
+        this.details = details;
+    }
+    toJSONResponse() {
+        return {
+            status: this.status,
+            statusCode: this.statusCode,
+            error: { name: this.name, message: this.message, details: this.details }
+        };
+    }
+}
+exports.JavaScriptError = JavaScriptError;
+class JavaScriptCompilationError extends JavaScriptError {
+    constructor(errorParams) {
+        super(errorParams, 'JavaScript Compilation Error');
+    }
+}
+exports.JavaScriptCompilationError = JavaScriptCompilationError;
+class JavaScriptRuntimeError extends JavaScriptError {
+    constructor(errorParams) {
+        super(errorParams, 'JavaScript Runtime Error');
+    }
+}
+exports.JavaScriptRuntimeError = JavaScriptRuntimeError;

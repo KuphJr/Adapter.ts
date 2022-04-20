@@ -21,7 +21,6 @@ const body_parser_1 = __importDefault(require("body-parser"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const index_1 = require("./index");
-const logger_1 = require("./logger");
 // load environmental variables from .env file
 dotenv_1.default.config({ path: path_1.default.join(__dirname, '..', '..', '.env') });
 const app = (0, express_1.default)();
@@ -35,19 +34,26 @@ app.options('*', (req, res) => {
 });
 app.use(body_parser_1.default.json());
 app.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     // Take any data provided in the URL as a query and put that data into the request body.
     for (const key in req.query) {
         req.body[key] = req.query[key];
     }
-    (0, logger_1.log)('Input: ' + req.body);
+    (0, index_1.log)('Input: ' + req.body);
+    // Check to make sure the request is authorized
+    if (req.body.nodeKey != process_1.default.env.NODEKEY) {
+        res.status(401).json({ error: 'The nodeKey is invalid.' });
+        (0, index_1.log)(`INVALID NODEKEY: ${(_a = req.body) === null || _a === void 0 ? void 0 : _a.nodeKey}`);
+        return;
+    }
     try {
         yield (0, index_1.createRequest)(req.body, (status, result) => {
-            (0, logger_1.log)('Result: ' + JSON.stringify(result));
+            (0, index_1.log)('Result: ' + JSON.stringify(result));
             res.status(status).json(result);
         });
     }
     catch (error) {
-        (0, logger_1.log)(error);
+        (0, index_1.log)(error);
     }
 }));
 app.listen(port, () => console.log(`Listening on port ${port}!`));

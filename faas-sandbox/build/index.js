@@ -8,13 +8,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createRequest = void 0;
+exports.createRequest = exports.log = void 0;
+const process_1 = __importDefault(require("process"));
 const Validator_1 = require("./Validator");
 const Sandbox_1 = require("./Sandbox");
-const logger_1 = require("./logger");
+if (!process_1.default.env.NODEKEY)
+    throw Error('A unique node key must be set using the environment variable NODEKEY.');
+const log = (itemToLog) => {
+    if (process_1.default.env.LOGGING) {
+        console.log(itemToLog);
+    }
+};
+exports.log = log;
 const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, function* () {
-    (0, logger_1.log)('INPUT: ' + JSON.stringify(input));
+    (0, exports.log)('INPUT: ' + JSON.stringify(input));
     // Validate the request
     try {
         if (!Validator_1.Validator.isValidInput(input)) {
@@ -26,7 +37,7 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
     }
     catch (untypedError) {
         const error = untypedError;
-        (0, logger_1.log)(error);
+        (0, exports.log)(error);
         callback(500, {
             status: 'errored',
             statusCode: 500,
@@ -45,11 +56,11 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
     }
     catch (untypedError) {
         const javascriptError = untypedError;
-        (0, logger_1.log)(javascriptError);
+        (0, exports.log)(javascriptError);
         callback(500, javascriptError.toJSONResponse());
         return;
     }
-    (0, logger_1.log)(output);
+    (0, exports.log)(output);
     try {
         if (!Validator_1.Validator.isValidOutput(output)) {
             // The validator will return true if the output is valid
@@ -60,7 +71,7 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
     }
     catch (untypedError) {
         const error = untypedError;
-        (0, logger_1.log)(error);
+        (0, exports.log)(error);
         callback(500, {
             status: 'errored',
             statusCode: 500,
@@ -80,7 +91,8 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
 });
 exports.createRequest = createRequest;
 // Export for GCP Functions deployment
-exports.gcpservice = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.sandbox = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     // set JSON content type and CORS headers for the response
     res.header('Content-Type', 'application/json');
     res.header('Access-Control-Allow-Origin', '*');
@@ -96,14 +108,21 @@ exports.gcpservice = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         for (const key in req.query) {
             req.body[key] = req.query[key];
         }
+        (0, exports.log)('Input: ' + req.body);
+        // Check to make sure the request is authorized
+        if (req.body.nodeKey != process_1.default.env.NODEKEY) {
+            res.status(401).json({ error: 'The nodeKey is invalid.' });
+            (0, exports.log)(`INVALID NODEKEY: ${(_a = req.body) === null || _a === void 0 ? void 0 : _a.nodeKey}`);
+            return;
+        }
         try {
-            yield (0, exports.createRequest)(req.body, (statusCode, data) => {
-                res.status(statusCode).send(data);
+            yield (0, exports.createRequest)(req.body, (status, result) => {
+                (0, exports.log)('Result: ' + JSON.stringify(result));
+                res.status(status).json(result);
             });
         }
-        catch (untypedError) {
-            const error = untypedError;
-            (0, logger_1.log)('ERROR: ' + error.toString());
+        catch (error) {
+            (0, exports.log)(error);
         }
     }
 });

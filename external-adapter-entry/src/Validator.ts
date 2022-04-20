@@ -1,6 +1,5 @@
-const process = require('process')
-
 interface UnvalidatedInput {
+  nodeKey: string
   id?: string
   data?: {
     type?: string
@@ -20,6 +19,7 @@ interface UnvalidatedInput {
 }
 
 export interface ValidInput {
+  nodeKey: string
   type: string
   id?: string
   js?: string
@@ -62,7 +62,7 @@ export class Validator {
         throw Error("Invalid value for the parameter 'type' which must be either " +
         "'bool', 'uint', 'uint256', 'int', 'int256', 'bytes32', 'string', 'bytes' or 'byte[]'.")
     }
-    const validatedInput: ValidInput = { type: input.data.type }
+    const validatedInput: ValidInput = { nodeKey: input.nodeKey, type: input.data.type }
 
     // validate id
     if (!input.id)
@@ -104,7 +104,7 @@ export class Validator {
       validatedInput.ref = input.data.ref
       if (typeof input.meta?.oracleRequest?.requester !== 'string')
         throw Error("Invalid jobspec setup.  Parameter 'meta.oracleRequest.requester' is required when referencing stored data.")
-      validatedInput.contractAddress = input.meta.oracleRequest.requester
+      validatedInput.contractAddress = input.meta.oracleRequest.requester.toLowerCase()
     }
 
     // validate cached & ttl

@@ -16,13 +16,18 @@ exports.DataStorage = void 0;
 const path_1 = __importDefault(require("path"));
 const process_1 = __importDefault(require("process"));
 const fs_1 = __importDefault(require("fs"));
-const os_1 = __importDefault(require("os"));
 const storage_1 = require("@google-cloud/storage");
 const crypto_js_1 = require("crypto-js");
 const Encryptor_1 = require("./Encryptor");
+const logger_1 = require("./logger");
 class DataStorage {
-    constructor({ publicKey = '', privateKey = '', bucketName = 'adapterjs-encrypted-user-data' }) {
-        this.publicKey = publicKey;
+    constructor(privateKey = '', bucketName = 'adapterjs-encrypted-user-data', persistantStorageDir = path_1.default.join(__dirname, '..', 'cache', 'database')) {
+        this.privateKey = privateKey;
+        this.persistantStorageDir = persistantStorageDir;
+        if (!fs_1.default.existsSync(persistantStorageDir)) {
+            (0, logger_1.log)('CREATING PERSISTANT database STORAGE DIRECTORY');
+            fs_1.default.mkdirSync(persistantStorageDir, { recursive: true });
+        }
         this.privateKey = privateKey;
         const gcsPrivateKey = process_1.default.env.GCS_PRIVATE_KEY;
         if (!gcsPrivateKey)
@@ -36,44 +41,25 @@ class DataStorage {
         });
         this.bucket = this.storage.bucket(bucketName);
     }
-    storeData(input) {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (this.publicKey === '')
-                throw new Error('Public key has not been provided.');
-            const encryptedObj = Encryptor_1.Encryptor.encrypt(this.publicKey, input);
-            const filename = (0, crypto_js_1.SHA256)(input.contractAddress + input.ref).toString() + '.json';
-            const file = this.bucket.file(filename);
-            const fileExists = yield file.exists();
-            if (fileExists[0])
-                throw new Error(`Reference ID ${input.ref} is already in use for contract ${input.contractAddress}.`);
-            yield file.save(JSON.stringify(encryptedObj));
-        });
-    }
     retrieveData(contractAddress, ref) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.privateKey === '')
-                throw new Error('Private key has not been provided');
+            console.log(`CONTRACT ADDRESS: ${contractAddress}, REF: ${ref}`);
             const filename = (0, crypto_js_1.SHA256)(contractAddress + ref).toString() + '.json';
-            const localfile = path_1.default.join(os_1.default.tmpdir(), filename);
-            try {
+            console.log(filename);
+            const filepath = path_1.default.join(this.persistantStorageDir, filename);
+            // Check to see if file has been previously downloaded and stored in cache
+            if (!fs_1.default.existsSync(filepath)) {
                 try {
-                    yield this.bucket.file(filename).download({ destination: localfile });
+                    yield this.bucket.file(filename).download({ destination: filepath });
                 }
                 catch (untypedError) {
                     const error = untypedError;
                     throw new Error(`Unable to fetch stored data: ${error.message}`);
                 }
-                const encryptedObj = JSON.parse(fs_1.default.readFileSync(localfile, { encoding: 'utf8' }));
-                const storedData = Encryptor_1.Encryptor.decrypt(this.privateKey, contractAddress, ref, encryptedObj);
-                return storedData;
             }
-            finally {
-                // In the event of a failure, ensure the localfile has been deleted
-                try {
-                    fs_1.default.unlinkSync(localfile);
-                }
-                catch (_a) { }
-            }
+            const encryptedObj = JSON.parse(fs_1.default.readFileSync(filepath, { encoding: 'utf8' }));
+            const storedData = Encryptor_1.Encryptor.decrypt(this.privateKey, contractAddress, ref, encryptedObj);
+            return storedData;
         });
     }
 }

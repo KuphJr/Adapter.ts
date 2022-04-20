@@ -4,9 +4,10 @@
   "description": "This is the component of Adapter.js which executes untrusted Node.js code using a sandboxed environment and sends back the returned value.  It is designed to run on a FaaS provider such as Google Cloud Functions, AWS Lambda or Azure Functions.  Even in the event that malicious code breaches the sandboxed environment, since the code is executed in an isolated FaaS container there is additional security risk.",
   "main": "index.js",
   "scripts": {
+    "test-deployed": "jest -- deployed.test.ts",
     "test": "jest -- Validator.test.ts & jest -- Sandbox.test.ts & jest -- index.test.ts & echo Please ignore error messages of the type 'Error: ENOENT: no such file or directory'. This is to be expected because the sandbox requires clearing os.tmpdir(), which causes Jest to print an error message.",
-    "start": "tsc && node ./build/app.js",
-    "startTS": "ts-node ./src/app.ts"
+    "start": "node ./build/app.js",
+    "build": "tsc"
   },
   "author": "KuphJr",
   "license": "ISC",
@@ -25,6 +26,8 @@
   },
   "dependencies": {
     "axios": "0.26.0",
-    "vm2": "3.9.9"
+    "ethers": "^5.6.4",
+    "vm2": "3.9.9",
+    "web3": "^1.7.3"
   }
 }
