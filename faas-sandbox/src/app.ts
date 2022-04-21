@@ -8,7 +8,7 @@ import bodyParser from 'body-parser'
 import cors from 'cors'
 import dotenv from 'dotenv'
 
-import { createRequest, Result, log } from './index'
+import { createRequest, Result, Log } from './index'
 
 // load environmental variables from .env file
 dotenv.config({ path: path.join(__dirname, '..', '..', '.env')})
@@ -32,20 +32,22 @@ app.post('/', async (req: express.Request, res: express.Response) => {
   for (const key in req.query) {
     req.body[key] = req.query[key]
   }
-  log('Input: ' + req.body)
+  Log.info('Request\n' + JSON.stringify(req.body))
   // Check to make sure the request is authorized
   if (req.body.nodeKey != process.env.NODEKEY) {
-    res.status(401).json({ error: 'The nodeKey is invalid.' })
-    log(`INVALID NODEKEY: ${req.body?.nodeKey}`)
+    res.status(401).json({ error: 'The nodeKey parameter is missing or invalid.' })
+    Log.error('The nodeKey parameter is missing or invalid.')
     return
   }
   try {
     await createRequest(req.body, (status: number, result: Result): void => {
-      log('Result: ' + JSON.stringify(result))
+      Log.info('Result\n' + JSON.stringify(result))
       res.status(status).json(result)
     })
-  } catch (error) {
-    log(error)
+  } catch (untypedError) {
+    const error = untypedError as Error
+    Log.error(error.toString())
+    res.status(500).send(error.message)
   }
 })
 
