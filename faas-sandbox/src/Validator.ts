@@ -23,7 +23,7 @@ export class Validator {
   }
 
   static isValidOutput = (output: unknown): output is ValidOutput => {
-    if (JSON.stringify(output).length > 1000)
+    if (JSON.stringify(output).length > 1024)
       throw Error('The output returned by the JavaScript code is larger than 1 KB')
     if (Buffer.isBuffer(output))
       return true
@@ -33,29 +33,9 @@ export class Validator {
       case 'number':
       case 'bigint':
         return true
-      case 'object':
-        if (Array.isArray(output)) {
-          if (output.length === 0)
-            return true
-          let elemType = typeof output[0]
-          switch (elemType) {
-            case 'boolean':
-            case 'string':
-            case 'number':
-            case 'bigint':
-              break
-            default:
-              throw Error(
-                "The output returned by the JavaScript code is not of type 'boolean', 'string', 'number', 'bigint', 'boolean[]', 'string[]', 'number[]', 'bigint[]' or 'Buffer'"
-              )
-          }
-          // ensure every element in the array has the same type
-          if (output.every(elem => typeof elem === elemType))
-            return true
-        }
       default:
         throw Error(
-          "The output returned by the JavaScript code is not of type 'boolean', 'string', 'number', 'bigint', 'boolean[]', 'string[]', 'number[]', 'bigint[]' or 'Buffer'"
+          "The output returned by the JavaScript code is not of type 'boolean', 'number', 'bigint' or string"
         )
     }
   }

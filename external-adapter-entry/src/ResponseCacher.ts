@@ -8,6 +8,7 @@ import { createRequest } from './index'
 import type { Result } from './index'
 import { DataStorage } from './GoogleCloudStorage'
 import { IpfsFetcher } from './IpfsFetcher'
+import { utils } from 'ethers'
 
 export class ResponseCacher {
   constructor(public persistantStorageDir = path.join(__dirname, '..', 'cache', 'cachedResponses')) {
@@ -24,7 +25,7 @@ export class ResponseCacher {
     dataStorage: DataStorage,
     callback: (status: number, result: Result) => void
   ): void {
-    log('GETCACHEDRESULT INPUT: ' + JSON.stringify(input))
+    log('GET CACHED RESULT INPUT: ' + JSON.stringify(input))
     const validatedInput = Validator.validateInput(input)
     const timeToLive = validatedInput.ttl
     // don't include the ttl in the object hash
@@ -53,7 +54,7 @@ export class ResponseCacher {
         return
       }
       const cachedResult = JSON.parse(cachedResultJSONstring)
-      if (Validator.isValidOutput(cachedResult.response.result)) {
+      if (utils.isHexString(cachedResult?.response?.result)) {
         // If a time-to-live (ttl) is specified, only return
         // the cached data if it is younger than the ttl.
         if (!timeToLive || (Date.now() - cachedResult.timeLastFulfilled) < timeToLive * 1000) {
@@ -70,7 +71,7 @@ export class ResponseCacher {
             status: 'errored',
             statusCode: 500,
             error: {
-              name: 'Time to live exceeded',
+              name: 'Stale cache',
               message: 'The cached data is older than the ttl. The cache is being filled with fresh data.'
             }
           })

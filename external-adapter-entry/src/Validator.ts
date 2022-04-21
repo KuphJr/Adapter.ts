@@ -1,3 +1,6 @@
+import { utils } from 'ethers'
+import { buffer } from 'stream/consumers'
+
 interface UnvalidatedInput {
   nodeKey: string
   id?: string
@@ -35,7 +38,9 @@ export interface Variables {
   [variableName: string]: any
 }
 
-export type ValidOutput = boolean | string | number | boolean[] | string[] | number[] | Buffer
+export type ValidOutput = boolean | string | number | bigint
+
+export type HexString = string
 
 export class Validator {
   constructor () {}
@@ -127,56 +132,70 @@ export class Validator {
     return validatedInput as ValidInput
   }
 
-  static validateOutput(type: string, output: unknown): ValidOutput {
+  static validateOutput(type: string, output: unknown): HexString {
+    let hexString: HexString
     if (typeof output === 'undefined')
       throw Error('The provided JavaScript did not return a value or returned an undefined value.')
     switch (type) {
       case ('bool'):
         if (typeof output !== 'boolean')
           throw Error('The returned value must be a boolean. Returned: ' + output)
+        hexString = output ?
+        '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff' :
+        '0x0000000000000000000000000000000000000000000000000000000000000000'
         break
       case ('uint'): case ('uint256'):
-        if (typeof output !== 'number')
+        if (typeof output !== 'number' || typeof output)
           throw Error('The returned value must be a number. Returned: ' + output)
         if (output % 1 !== 0 || output < 0)
           throw Error('The returned value must be a positive integer. Returned: ' + output)
+        hexString = utils.hexZeroPad(utils.hexlify(output), 32)
         break
       case ('int'): case ('int256'):
         if (typeof output !== 'number')
           throw Error('The returned value must be a number. Returned: ' + output)
         if (output % 1 !== 0)
           throw Error('The returned value must be an integer. Returned: ' + output)
+        hexString = utils.hexZeroPad(utils.hexlify(output), 32)
+        break
+      case ('bytes32'):
+        if (typeof output !== 'string' ||
+          (output.length > 31 && output.length !== 66) ||
+          (output.length === 66 && !utils.isHexString(output))
+        )
+          throw Error('The returned value must be a valid 32 byte hex string or a string of less than 32 characters. Returned: ' + output)
+        hexString = output.length === 66 ?
+          output :
+          utils.hexZeroPad(Buffer.from(output).toString('hex'), 32)
         break
       case ('string'):
-        if (typeof output !== 'string')
-          throw Error('The returned value must be a string. Returned: ' + output)
+        if (typeof output !== 'string' || output.length > 1024)
+          throw Error('The returned value must be a string containg less than 1024 characters. Returned: ' + output)
+        hexString = Buffer.from(output).toString('hex')
         break
-      case ('bytes32'): case ('bytes'): case ('byte[]'):
+      case ('bytes'): case ('byte[]'):
+        if (typeof output !== 'string' || output.length > 2050 || !utils.isHexString(output))
+          throw Error('The returned value must be a valid hex string containing less than 1024 bytes. Returned: ' + output)
+        hexString = output
         break
       default:
         throw Error("Invalid value for the parameter 'type' which must be either " +
-        "'bool', 'uint', 'uint256', 'int', 'int256', 'bytes32', 'string' or 'bytes'.")
+        "'bool', 'uint', 'uint256', 'int', 'int256', 'bytes32', 'string', 'bytes' or 'byte[]'.")
     }
-    if (Validator.isValidOutput(output))
-      return output
-    else
-      throw Error('Invalid output.')
+    return hexString
   }
 
   static isValidOutput = (output: unknown): output is ValidOutput => {
-    if (JSON.stringify(output).length > 1000)
+    if (JSON.stringify(output).length > 1024)
       throw new Error('The output returned by the JavaScript code is larger than 1 KB')
     switch (typeof output) {
       case 'boolean':
-        return true
       case 'string':
       case 'number':
+      case 'bigint':
         return true
-      case 'object':
-        if (Buffer.isBuffer(output))
-          return true
       default:
-        throw new Error("The output returned by the JavaScript code is not of type 'boolean', 'number', 'string', or 'Buffer'.")
+        throw new Error("The output returned by the JavaScript code is not of type 'boolean', 'number', 'bigint' or 'string'.")
     }
   }
 

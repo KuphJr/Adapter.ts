@@ -2,7 +2,7 @@ import axios from 'axios'
 import process from 'process'
 
 import { log } from './logger'
-import { Validator, ValidOutput } from './Validator'
+import { HexString, Validator, ValidOutput } from './Validator'
 import type { Variables } from './Validator'
 
 export class Sandbox {
@@ -11,7 +11,7 @@ export class Sandbox {
     type: string,
     javascriptString: string,
     vars: Variables
-  ): Promise<ValidOutput> {
+  ): Promise<HexString> {
     const sandboxUrl = process.env.SANDBOXURL
     if (!sandboxUrl) {
       throw new Error('SANDBOXURL was not provided in environement variables.')

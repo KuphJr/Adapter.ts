@@ -51,7 +51,7 @@ app.post('/', async (req: express.Request, res: express.Response) => {
   log('Input: ' + req.body)
   // Check to make sure the request is authorized
   if (req.body.nodeKey != process.env.NODEKEY) {
-    res.status(401).json({ error: 'The nodeKey is invalid.' })
+    res.status(401).json({ error: 'The nodeKey parameter is missing invalid.' })
     log(`INVALID NODEKEY: ${req.body?.nodeKey}`)
     return
   }

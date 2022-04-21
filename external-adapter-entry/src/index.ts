@@ -3,7 +3,7 @@ import { Request, Response } from 'express'
 import { log } from './logger'
 import type { ValidStoredData } from './StoredDataValidator'
 import { Validator } from './Validator'
-import type { ValidInput, ValidOutput, Variables } from './Validator'
+import type { HexString, ValidInput, Variables } from './Validator'
 import { DataStorage } from './GoogleCloudStorage'
 import { IpfsFetcher } from './IpfsFetcher'
 import { AdapterError, JavaScriptError } from './Errors'
@@ -13,7 +13,7 @@ export interface Result {
   status: string
   statusCode: number
   jobRunId?: string
-  result?: ValidOutput
+  result?: HexString
   error?: {
     name: string
     message: string
@@ -115,7 +115,7 @@ export const createRequest = async (
     }).toJSONResponse())
     return
   }
-  let result: ValidOutput
+  let result: HexString
   try {
     result = await Sandbox.evaluate(validatedInput.nodeKey, validatedInput.type, javascriptString, vars)
   } catch (untypedError) {
