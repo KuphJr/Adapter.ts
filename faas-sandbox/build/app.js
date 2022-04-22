@@ -16,13 +16,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // When this code is deployed to a FaaS provider, this file will no longer be used.
 const process_1 = __importDefault(require("process"));
 const path_1 = __importDefault(require("path"));
+const dotenv_1 = __importDefault(require("dotenv"));
+// load environmental variables from .env file
+dotenv_1.default.config({ path: path_1.default.join(__dirname, '..', '..', '.env') });
 const express_1 = __importDefault(require("express"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const cors_1 = __importDefault(require("cors"));
-const dotenv_1 = __importDefault(require("dotenv"));
 const index_1 = require("./index");
-// load environmental variables from .env file
-dotenv_1.default.config({ path: path_1.default.join(__dirname, '..', '..', '.env') });
 const app = (0, express_1.default)();
 const port = process_1.default.env.EA_PORT || 8030;
 app.use((0, cors_1.default)());

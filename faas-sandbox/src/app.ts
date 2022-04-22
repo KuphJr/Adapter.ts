@@ -2,16 +2,15 @@
 // When this code is deployed to a FaaS provider, this file will no longer be used.
 import process from 'process'
 import path from 'path'
+import dotenv from 'dotenv'
+// load environmental variables from .env file
+dotenv.config({ path: path.join(__dirname, '..', '..', '.env')})
 
 import express from 'express'
 import bodyParser from 'body-parser'
 import cors from 'cors'
-import dotenv from 'dotenv'
 
 import { createRequest, Result, Log } from './index'
-
-// load environmental variables from .env file
-dotenv.config({ path: path.join(__dirname, '..', '..', '.env')})
 
 const app = express()
 const port = process.env.EA_PORT || 8030

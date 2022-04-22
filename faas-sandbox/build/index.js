@@ -53,6 +53,7 @@ exports.sandbox = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 // Process request
 const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     // Validate the request
     try {
         if (!Validator_1.Validator.isValidInput(input))
@@ -82,11 +83,12 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
         callback(406, javascriptError.toJSONResponse());
         return;
     }
-    Log.debug('Sandbox Output\n' + JSON.stringify(output));
+    Log.debug('Sandbox Output\n');
+    Log.debug(((_a = output) === null || _a === void 0 ? void 0 : _a.toString()) || '');
     // Validate the type of the returned value
+    let validatedOutput;
     try {
-        if (!Validator_1.Validator.isValidOutput(output))
-            return;
+        validatedOutput = Validator_1.Validator.validateOutput(output);
     }
     catch (untypedError) {
         const error = untypedError;
@@ -104,7 +106,7 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
     callback(200, {
         status: 'ok',
         statusCode: 200,
-        result: output,
+        result: validatedOutput,
     });
 });
 exports.createRequest = createRequest;

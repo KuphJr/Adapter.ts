@@ -14,17 +14,26 @@ export class Sandbox {
   ): Promise<HexString> {
     if (!process.env.SANDBOXURL)
     throw new Error('SANDBOXURL was not provided in environement variables.')
-    const { data } = await axios.post(
-      process.env.SANDBOXURL,
-      {
-        nodeKey,
-        js: javascriptString,
-        vars: vars
-      },
-      {
-        timeout: process.env.SANDBOXTIMEOUT ? parseInt(process.env.SANDBOXTIMEOUT) : 14000
+    try {
+      const { data } = await axios.post(
+        process.env.SANDBOXURL,
+        {
+          nodeKey,
+          js: javascriptString,
+          vars: vars
+        },
+        {
+          timeout: process.env.SANDBOXTIMEOUT ? parseInt(process.env.SANDBOXTIMEOUT) : 14000
+        }
+      )
+      return Validator.validateOutput(type, data.result)
+    } catch (error: any) {
+      Log.error(error)
+      if (error?.response?.data?.error) {
+        throw error.response.data.error
+      } else {
+        throw error
       }
-    )
-    return Validator.validateOutput(type, data.result)
+    }
   }
 }

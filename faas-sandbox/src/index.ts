@@ -74,11 +74,12 @@ export const createRequest = async (
     callback(406, javascriptError.toJSONResponse())
     return
   }
-  Log.debug('Sandbox Output\n' + JSON.stringify(output))
+  Log.debug('Sandbox Output\n')
+  Log.debug((output as any)?.toString() || '')
   // Validate the type of the returned value
+  let validatedOutput: ValidOutput
   try {
-    if (!Validator.isValidOutput(output))
-      return
+    validatedOutput = Validator.validateOutput(output)
   } catch (untypedError) {
     const error = untypedError as Error
     Log.error(error.toString())
@@ -95,7 +96,7 @@ export const createRequest = async (
   callback(200, {
     status: 'ok',
     statusCode: 200,
-    result: output,
+    result: validatedOutput,
   })
 }
 
