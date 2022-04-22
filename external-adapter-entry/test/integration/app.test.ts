@@ -1,4 +1,3 @@
-// test response caching
 // test ipfs caching
 // test gcp caching
 // test sandbox

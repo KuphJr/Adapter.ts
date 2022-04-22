@@ -10,7 +10,7 @@ if (!process.env.NODEKEY)
   throw Error('A unique node key must be set using the environment variable NODEKEY.')
 
 // Export for FaaS deployment
-export const sandbox = async (req: Request, res: Response ) => {
+exports.sandbox = async (req: Request, res: Response ) => {
   // set JSON content type and CORS headers for the response
   res.header('Content-Type', 'application/json')
   res.header('Access-Control-Allow-Origin', '*')
@@ -21,23 +21,24 @@ export const sandbox = async (req: Request, res: Response ) => {
     res.set('Access-Control-Allow-Headers', 'Content-Type')
     res.set('Access-Control-Max-Age', '3600')
     res.status(204).send('')
-  } else {
-    Log.info('Input\n' + JSON.stringify(req.body))
-    // Check to make sure the request is authorized
-    if (req.body.nodeKey != process.env.NODEKEY) {
-      res.status(401).json({ error: 'The nodeKey parameter is missing or invalid.' })
-      Log.error('Invalid Node Key')
-      return
-    }
-    try {
-      await createRequest(req.body, (status: number, result: Result): void => {
-        Log.info('Result\n' + JSON.stringify(result))
-        res.status(status).json(result)
-      })
-    } catch (untypedError) {
-      const error = untypedError as Error
-      Log.error(error.toString())
-    }
+    return
+  }
+  Log.info('Input\n' + JSON.stringify(req.body))
+  // Check to make sure the request is authorized
+  if (req.body.nodeKey != process.env.NODEKEY) {
+    res.status(401).json({ error: 'The nodeKey parameter is missing or invalid.' })
+    Log.error('Invalid Node Key')
+    return
+  }
+  try {
+    await createRequest(req.body, (status: number, result: Result): void => {
+      Log.info('Result\n' + JSON.stringify(result))
+      res.status(status).json(result)
+    })
+  } catch (untypedError) {
+    const error = untypedError as Error
+    Log.error(error.toString())
+    res.status(500).send(error.message)
   }
 }
 
@@ -48,9 +49,8 @@ export const createRequest = async (
 ) => {
   // Validate the request
   try {
-    if (!Validator.isValidInput(input)) {
+    if (!Validator.isValidInput(input))
       return
-    }
   } catch (untypedError) {
     const error = untypedError as Error
     Log.error(error.toString())

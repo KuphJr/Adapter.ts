@@ -38,7 +38,7 @@ export interface Variables {
   [variableName: string]: any
 }
 
-export type ValidOutput = boolean | string | number | bigint
+export type ValidOutput = boolean | number | string
 
 export type HexString = string
 
@@ -60,12 +60,11 @@ export class Validator {
       case ('int256'):
       case ('bytes32'):
       case ('string'):
-      case('byte[]'):
       case ('bytes'):
         break
       default:
         throw Error("Invalid value for the parameter 'type' which must be either " +
-        "'bool', 'uint', 'uint256', 'int', 'int256', 'bytes32', 'string', 'bytes' or 'byte[]'.")
+        "'bool', 'uint', 'uint256', 'int', 'int256', 'bytes32', 'string' or 'bytes'.")
     }
     const validatedInput: ValidInput = { nodeKey: input.nodeKey, type: input.data.type }
 
@@ -132,74 +131,82 @@ export class Validator {
     return validatedInput as ValidInput
   }
 
-  static validateOutput(type: string, output: unknown): HexString {
+  static validateOutput(requestedType: string, output: any): HexString {
     let hexString: HexString
-    if (typeof output === 'undefined')
-      throw Error('The provided JavaScript did not return a value or returned an undefined value.')
-    switch (type) {
-      case ('bool'):
-        if (typeof output !== 'boolean')
-          throw Error('The returned value must be a boolean. Returned: ' + output)
-        hexString = output ?
-        '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff' :
-        '0x0000000000000000000000000000000000000000000000000000000000000000'
-        break
-      case ('uint'): case ('uint256'):
-        if (typeof output !== 'number' || typeof output)
-          throw Error('The returned value must be a number. Returned: ' + output)
-        if (output % 1 !== 0 || output < 0)
-          throw Error('The returned value must be a positive integer. Returned: ' + output)
-        hexString = utils.hexZeroPad(utils.hexlify(output), 32)
-        break
-      case ('int'): case ('int256'):
-        if (typeof output !== 'number')
-          throw Error('The returned value must be a number. Returned: ' + output)
-        if (output % 1 !== 0)
-          throw Error('The returned value must be an integer. Returned: ' + output)
-        hexString = utils.hexZeroPad(utils.hexlify(output), 32)
-        break
-      case ('bytes32'):
-        if (typeof output !== 'string' ||
-          (output.length > 31 && output.length !== 66) ||
-          (output.length === 66 && !utils.isHexString(output))
-        )
-          throw Error('The returned value must be a valid 32 byte hex string or a string of less than 32 characters. Returned: ' + output)
-        hexString = output.length === 66 ?
-          output :
-          utils.hexZeroPad(Buffer.from(output).toString('hex'), 32)
-        break
-      case ('string'):
-        if (typeof output !== 'string' || output.length > 1024)
-          throw Error('The returned value must be a string containg less than 1024 characters. Returned: ' + output)
-        hexString = Buffer.from(output).toString('hex')
-        break
-      case ('bytes'): case ('byte[]'):
-        if (typeof output !== 'string' || output.length > 2050 || !utils.isHexString(output))
-          throw Error('The returned value must be a valid hex string containing less than 1024 bytes. Returned: ' + output)
-        hexString = output
-        break
+    switch (typeof output) {
+      case('boolean'):
+        if (requestedType !== 'bool')
+          throw Error(`A ${requestedType} value was requested but a boolean value was returned.`)
+        return hexString = output ?
+          '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff' :
+          '0x0000000000000000000000000000000000000000000000000000000000000000'
+      case('number'):
+        switch (requestedType) {
+          case('int'): case('int256'):
+            console.log('OUTPUT: ')
+            console.log(output)
+            if(output > (2**256 / 2 - 1) || output < -(2**256 / 2))
+              throw Error('The returned number is outside the bounds of a 256 bit integer.')
+            if (output % 1 !== 0)
+              throw Error('The returned number must be an integer.')
+            return signedIntToBytes32HexString(output)
+          case('uint'): case('uint256'):
+            if(output > 2**256)
+              throw Error('The returned number is outside the bounds of a 256 bit unsigned integer.')
+            if (output % 1 !== 0 || output < 0)
+              throw Error('The returned number must be a positive integer.')
+            return utils.hexZeroPad('0x' + output.toString(16), 32)
+          default:
+            throw Error(`A ${requestedType} value was requested but a number value was returned.`)
+        }
+      case('string'):
+        switch(requestedType) {
+          case('bool'): case('int'): case('int256'): case('uint'): case('uint256'):
+            if (Validator.isBytes32String(output))
+              return output
+            throw Error('The returned string is not a valid 32 byte hex string.')
+          case('bytes32'):
+            if (Validator.isBytes32String(output))
+              return output
+            if (output.length < 32)
+              return utils.hexZeroPad('0x' + Buffer.from(output).toString('hex'), 32)
+            throw Error('The returned string is not a valid 32 byte hex string or a string of less than 32 characters.')
+          case('bytes'):
+            if (utils.isHexString(output))
+              return output
+            throw Error('The returned string is not a valid hex string.')
+          case('string'):
+            if (output.length > 1024)
+              throw Error('The returned string must not have more than 1024 characters.')
+            return '0x' + Buffer.from(output).toString('hex')
+        }
       default:
-        throw Error("Invalid value for the parameter 'type' which must be either " +
-        "'bool', 'uint', 'uint256', 'int', 'int256', 'bytes32', 'string', 'bytes' or 'byte[]'.")
+        throw Error(`The returned type ${typeof output} is invalid.`)
     }
-    return hexString
   }
 
   static isValidOutput = (output: unknown): output is ValidOutput => {
     if (JSON.stringify(output).length > 1024)
-      throw new Error('The output returned by the JavaScript code is larger than 1 KB')
+      throw Error('The output returned by the JavaScript code is larger than 1 KB')
     switch (typeof output) {
       case 'boolean':
       case 'string':
       case 'number':
-      case 'bigint':
         return true
       default:
-        throw new Error("The output returned by the JavaScript code is not of type 'boolean', 'number', 'bigint' or 'string'.")
+        throw Error("The output returned by the JavaScript code is not of type 'boolean', 'number' or 'string'.")
     }
   }
 
-  private static isVariables = (variables: unknown): variables is Variables => {
+  static isBytes32String = (input: unknown): boolean => {
+    if (typeof input !== 'string')
+      return false
+    if (input.length === 66 && utils.isHexString(input))
+      return true
+    return false
+  }
+
+  static isVariables = (variables: unknown): variables is Variables => {
     if (typeof variables !== 'object')
       return false
     if (Array.isArray(variables))
@@ -212,4 +219,43 @@ export class Validator {
     }
     return true
   }
+}
+
+const signedIntToBytes32HexString = (int: number): HexString => {
+  if (int >= 0)
+    return utils.hexZeroPad('0x' + int.toString(16), 32)
+  const hexCode: Record<string, string> = {
+    '0000': '0',
+    '0001': '1',
+    '0010': '2',
+    '0011': '3',
+    '0100': '4',
+    '0101': '5',
+    '0110': '6',
+    '0111': '7',
+    '1000': '8',
+    '1001': '9',
+    '1010': 'a',
+    '1011': 'b',
+    '1100': 'c',
+    '1101': 'd',
+    '1110': 'e',
+    '1111': 'f'
+  }
+  const positiveBinaryString = (-int).toString(2).padStart(256, '0')
+  const onesComplement = positiveBinaryString.replace(/0/g, '#').replace(/1/g, '0').replace(/#/g, '1')
+  const twosComplementArr = onesComplement.split('')
+  for (let i = 255; i >= 0; i--) {
+    if (twosComplementArr[i] === '0') {
+      twosComplementArr[i] = '1'
+      for (let j = i + 1; j < 256; j++) {
+        twosComplementArr[j] = '0'
+      }
+      break
+    }
+  }
+  let hexString = '0x'
+  for (let i = 0; i + 3 < 256; i+=4)
+    hexString += hexCode[twosComplementArr.slice(i, i+4).join('')]
+  return hexString
 }

@@ -1,9 +1,9 @@
 // This is used to test the database-uploader component once it is deployed to Google Cloud Functions
-import process, { hasUncaughtExceptionCaptureCallback } from 'process'
+import process from 'process'
 import path from 'path'
 import dotenv from 'dotenv'
 dotenv.config({ path: path.join(__dirname, '..', '..', '..', '.env')})
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 
 const deployedUrl = process.env.SANDBOXURL
 
@@ -13,6 +13,7 @@ if (typeof deployedUrl !== 'string')
 describe('deployed faas-sandbox', () => {
   it('Should execute async code with an external dependency (axios) and writing to os.tmpdir()', async () => {
     const input = {
+      nodeKey: process.env.NODEKEY,
       vars: {
         myNum: 100,
         myString: "https://jsonplaceholder.typicode.com/posts/2",

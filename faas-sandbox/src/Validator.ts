@@ -7,7 +7,7 @@ export interface ValidRequest {
   vars: Variables
 }
 
-export type ValidOutput = boolean | number | bigint | string
+export type ValidOutput = boolean | number | string
 
 export class Validator {
 
@@ -28,12 +28,13 @@ export class Validator {
     switch (typeof output) {
       case 'boolean':
       case 'number':
-      case 'bigint':
       case 'string':
+        if (Buffer.byteLength(JSON.stringify(output)) > 1024)
+          throw Error('The output returned by the JavaScript code is larger than 1 KB')
         return true
       default:
         throw Error(
-          "The output returned by the JavaScript code is not of type 'boolean', 'number', 'bigint' or string"
+          "The output returned by the JavaScript code is not of type 'boolean', 'number' or string"
         )
     }
   }

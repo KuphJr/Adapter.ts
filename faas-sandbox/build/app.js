@@ -34,26 +34,27 @@ app.options('*', (req, res) => {
 });
 app.use(body_parser_1.default.json());
 app.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     // Take any data provided in the URL as a query and put that data into the request body.
     for (const key in req.query) {
         req.body[key] = req.query[key];
     }
-    (0, index_1.log)('Input: ' + req.body);
+    index_1.Log.info('Request\n' + JSON.stringify(req.body));
     // Check to make sure the request is authorized
     if (req.body.nodeKey != process_1.default.env.NODEKEY) {
-        res.status(401).json({ error: 'The nodeKey is invalid.' });
-        (0, index_1.log)(`INVALID NODEKEY: ${(_a = req.body) === null || _a === void 0 ? void 0 : _a.nodeKey}`);
+        res.status(401).json({ error: 'The nodeKey parameter is missing or invalid.' });
+        index_1.Log.error('The nodeKey parameter is missing or invalid.');
         return;
     }
     try {
         yield (0, index_1.createRequest)(req.body, (status, result) => {
-            (0, index_1.log)('Result: ' + JSON.stringify(result));
+            index_1.Log.info('Result\n' + JSON.stringify(result));
             res.status(status).json(result);
         });
     }
-    catch (error) {
-        (0, index_1.log)(error);
+    catch (untypedError) {
+        const error = untypedError;
+        index_1.Log.error(error.toString());
+        res.status(500).send(error.message);
     }
 }));
 app.listen(port, () => console.log(`Listening on port ${port}!`));

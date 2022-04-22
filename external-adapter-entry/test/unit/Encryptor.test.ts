@@ -8,7 +8,7 @@ import type { ValidStoredData } from '../../src/StoredDataValidator'
 
 describe("Encryptor", () => {
   const storedData = {
-    nodeKey = process.env.NODEKEY,
+    nodeKey: process.env.NODEKEY,
     contractAddress: "0x514910771af9ca656af840dff83e8264ecf986ca",
     ref: "abc13",
     vars: {

@@ -19,34 +19,35 @@ const fs_1 = __importDefault(require("fs"));
 const storage_1 = require("@google-cloud/storage");
 const crypto_js_1 = require("crypto-js");
 const Encryptor_1 = require("./Encryptor");
-const logger_1 = require("./logger");
+const Log_1 = require("./Log");
 class DataStorage {
-    constructor(privateKey = '', bucketName = 'adapterjs-encrypted-user-data', persistantStorageDir = path_1.default.join(__dirname, '..', 'cache', 'database')) {
+    constructor(privateKey, bucketName = process_1.default.env.BUCKET || 'adapterjs-encrypted-user-data', persistantStorageDir = path_1.default.join(__dirname, '..', 'cache', 'database')) {
         this.privateKey = privateKey;
         this.persistantStorageDir = persistantStorageDir;
         if (!fs_1.default.existsSync(persistantStorageDir)) {
-            (0, logger_1.log)('CREATING PERSISTANT database STORAGE DIRECTORY');
+            Log_1.Log.debug('Creating local data storage caching directory: ' + persistantStorageDir);
             fs_1.default.mkdirSync(persistantStorageDir, { recursive: true });
         }
-        this.privateKey = privateKey;
-        const gcsPrivateKey = process_1.default.env.GCS_PRIVATE_KEY;
-        if (!gcsPrivateKey)
+        if (!process_1.default.env.GCS_PROJECT_ID)
+            throw Error("Setup Error: The 'GCS_PROJECT_ID' environment variable has not been set.");
+        if (!process_1.default.env.GCS_CLIENT_EMAIL)
+            throw Error("Setup Error: The 'GCS_CLIENT_EMAIL' environment variable has not been set.");
+        if (!process_1.default.env.GCS_PRIVATE_KEY)
             throw Error("Setup Error: The 'GCS_PRIVATE_KEY' environment variable has not been set.");
         this.storage = new storage_1.Storage({
             projectId: process_1.default.env.GCS_PROJECT_ID,
             credentials: {
                 client_email: process_1.default.env.GCS_CLIENT_EMAIL,
-                private_key: gcsPrivateKey.replace(/\\n/g, '\n')
+                private_key: process_1.default.env.GCS_PRIVATE_KEY.replace(/\\n/g, '\n')
             }
         });
         this.bucket = this.storage.bucket(bucketName);
     }
     retrieveData(contractAddress, ref) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log(`CONTRACT ADDRESS: ${contractAddress}, REF: ${ref}`);
             const filename = (0, crypto_js_1.SHA256)(contractAddress + ref).toString() + '.json';
-            console.log(filename);
             const filepath = path_1.default.join(this.persistantStorageDir, filename);
+            Log_1.Log.debug('Attemping to fetch from local data storage caching directory: ' + filepath);
             // Check to see if file has been previously downloaded and stored in cache
             if (!fs_1.default.existsSync(filepath)) {
                 try {
@@ -54,7 +55,7 @@ class DataStorage {
                 }
                 catch (untypedError) {
                     const error = untypedError;
-                    throw new Error(`Unable to fetch stored data: ${error.message}`);
+                    throw Error(`Unable to fetch stored data: ${error.message}`);
                 }
             }
             const encryptedObj = JSON.parse(fs_1.default.readFileSync(filepath, { encoding: 'utf8' }));

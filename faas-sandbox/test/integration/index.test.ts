@@ -1,8 +1,13 @@
+import process from 'process'
+import path from 'path'
+import dotenv from 'dotenv'
+dotenv.config({ path: path.join(__dirname, '..', '..', '..', '.env')})
 import { createRequest } from '../../src/index'
 
 describe('faas-sandbox', () => {
   it('Should execute async code with an external dependency (axios) and writing to os.tmpdir()', async () => {
     const input = {
+      nodeKey: process.env.NODEKEY,
       vars: {
         myNum: 100,
         myString: "https://jsonplaceholder.typicode.com/posts/2",

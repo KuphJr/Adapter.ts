@@ -1,7 +1,7 @@
 import axios from 'axios'
 import process from 'process'
 
-import { log } from './logger'
+import { Log } from './Log'
 import { HexString, Validator, ValidOutput } from './Validator'
 import type { Variables } from './Validator'
 
@@ -12,24 +12,19 @@ export class Sandbox {
     javascriptString: string,
     vars: Variables
   ): Promise<HexString> {
-    const sandboxUrl = process.env.SANDBOXURL
-    if (!sandboxUrl) {
-      throw new Error('SANDBOXURL was not provided in environement variables.')
-    }
-    try {
-      const { data } = await axios.post(sandboxUrl, {
+    if (!process.env.SANDBOXURL)
+    throw new Error('SANDBOXURL was not provided in environement variables.')
+    const { data } = await axios.post(
+      process.env.SANDBOXURL,
+      {
         nodeKey,
         js: javascriptString,
         vars: vars
-      })
-      return Validator.validateOutput(type, data.result)
-    } catch (error: any) {
-      log(error)
-      if (error?.response?.data?.error) {
-        throw error.response.data.error
-      } else {
-        throw error
+      },
+      {
+        timeout: process.env.SANDBOXTIMEOUT ? parseInt(process.env.SANDBOXTIMEOUT) : 14000
       }
-    }
+    )
+    return Validator.validateOutput(type, data.result)
   }
 }
