@@ -17,7 +17,7 @@ export class IpfsFetcher {
 
   async fetchJavaScriptString (cid: string): Promise<string> {
     // first, check local storage to see if the IPFS file has previously been fetched and stored
-    const filepath = path.join(this.persistantStorageDir, `${cid}.json`)
+    const filepath = path.join(this.persistantStorageDir, `${cid}.js`)
     Log.debug('Checking for local IPFS file: ' + filepath)
     if (fs.existsSync(filepath))
       return fs.readFileSync(filepath, { encoding: 'utf8' })
