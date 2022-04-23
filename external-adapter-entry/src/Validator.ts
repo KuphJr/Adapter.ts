@@ -53,7 +53,6 @@ export class Validator {
     if (typeof input.data.type !== 'string')
       throw Error("The parameter 'type' must be provided as a string.")
     switch (input.data.type) {
-      case ('bool'):
       case ('uint'):
       case ('uint256'):
       case ('int'):
@@ -64,7 +63,7 @@ export class Validator {
         break
       default:
         throw Error("Invalid value for the parameter 'type' which must be either " +
-        "'bool', 'uint', 'uint256', 'int', 'int256', 'bytes32', 'string' or 'bytes'.")
+        "'uint', 'uint256', 'int', 'int256', 'bytes32', 'string' or 'bytes'.")
     }
     const validatedInput: ValidInput = { nodeKey: input.nodeKey, type: input.data.type }
 
