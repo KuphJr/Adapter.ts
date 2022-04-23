@@ -148,19 +148,6 @@ export class Validator {
     }
   }
 
-  static isValidOutput = (output: unknown): output is ValidOutput => {
-    if (JSON.stringify(output).length > 1024)
-      throw Error('The output returned by the JavaScript code is larger than 1 KB')
-    switch (typeof output) {
-      case 'boolean':
-      case 'string':
-      case 'number':
-        return true
-      default:
-        throw Error("The output returned by the JavaScript code is not of type 'boolean', 'number' or 'string'.")
-    }
-  }
-
   static isBytes32String = (input: unknown): boolean => {
     if (typeof input !== 'string')
       return false

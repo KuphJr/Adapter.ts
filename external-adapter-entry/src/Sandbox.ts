@@ -13,7 +13,7 @@ export class Sandbox {
     vars: Variables
   ): Promise<HexString> {
     if (!process.env.SANDBOXURL)
-    throw new Error('SANDBOXURL was not provided in environement variables.')
+      throw Error('SANDBOXURL was not provided in environement variables.')
     try {
       const { data } = await axios.post(
         process.env.SANDBOXURL,

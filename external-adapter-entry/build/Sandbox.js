@@ -22,7 +22,7 @@ class Sandbox {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             if (!process_1.default.env.SANDBOXURL)
-                throw new Error('SANDBOXURL was not provided in environement variables.');
+                throw Error('SANDBOXURL was not provided in environement variables.');
             try {
                 const { data } = yield axios_1.default.post(process_1.default.env.SANDBOXURL, {
                     nodeKey,
