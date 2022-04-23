@@ -5,17 +5,17 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import cors from 'cors'
 import dotenv from 'dotenv'
+// Try to load environmental variables from .env file.
+// This is only for testing while running outside of a Docker container.
+try {
+  dotenv.config({ path: path.join(__dirname, '..', '..', '.env')})
+} catch {}
 
 import { createRequest, Result } from './index'
 import { Log } from './Log'
 import { IpfsFetcher } from './IpfsFetcher'
 import { DataStorage } from './GoogleCloudStorage'
 
-// Try to load environmental variables from .env file.
-// This is only for testing while running outside of a Docker container.
-try {
-  dotenv.config({ path: path.join(__dirname, '..', '..', '.env')})
-} catch {}
 
 if (!process.env.PRIVATEKEY)
   throw Error('Setup Error: The PRIVATEKEY environment variable has not been set.')
