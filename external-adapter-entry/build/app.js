@@ -18,16 +18,16 @@ const express_1 = __importDefault(require("express"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
-const index_1 = require("./index");
-const Log_1 = require("./Log");
-const IpfsFetcher_1 = require("./IpfsFetcher");
-const GoogleCloudStorage_1 = require("./GoogleCloudStorage");
 // Try to load environmental variables from .env file.
 // This is only for testing while running outside of a Docker container.
 try {
     dotenv_1.default.config({ path: path_1.default.join(__dirname, '..', '..', '.env') });
 }
 catch (_a) { }
+const index_1 = require("./index");
+const Log_1 = require("./Log");
+const IpfsFetcher_1 = require("./IpfsFetcher");
+const GoogleCloudStorage_1 = require("./GoogleCloudStorage");
 if (!process_1.default.env.PRIVATEKEY)
     throw Error('Setup Error: The PRIVATEKEY environment variable has not been set.');
 if (!process_1.default.env.WEB3STORAGETOKEN)

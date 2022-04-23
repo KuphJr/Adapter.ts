@@ -12,7 +12,6 @@ class Validator {
         if (typeof input.data.type !== 'string')
             throw Error("The parameter 'type' must be provided as a string.");
         switch (input.data.type) {
-            case ('bool'):
             case ('uint'):
             case ('uint256'):
             case ('int'):
@@ -23,7 +22,7 @@ class Validator {
                 break;
             default:
                 throw Error("Invalid value for the parameter 'type' which must be either " +
-                    "'bool', 'uint', 'uint256', 'int', 'int256', 'bytes32', 'string' or 'bytes'.");
+                    "'uint', 'uint256', 'int', 'int256', 'bytes32', 'string' or 'bytes'.");
         }
         const validatedInput = { nodeKey: input.nodeKey, type: input.data.type };
         // validate id
@@ -106,13 +105,6 @@ class Validator {
     }
 }
 exports.Validator = Validator;
-Validator.isBytes32String = (input) => {
-    if (typeof input !== 'string')
-        return false;
-    if (input.length === 66 && ethers_1.utils.isHexString(input))
-        return true;
-    return false;
-};
 Validator.isVariables = (variables) => {
     if (typeof variables !== 'object')
         return false;

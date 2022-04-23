@@ -30,7 +30,7 @@ class IpfsFetcher {
     fetchJavaScriptString(cid) {
         return __awaiter(this, void 0, void 0, function* () {
             // first, check local storage to see if the IPFS file has previously been fetched and stored
-            const filepath = path_1.default.join(this.persistantStorageDir, `${cid}.json`);
+            const filepath = path_1.default.join(this.persistantStorageDir, `${cid}.js`);
             Log_1.Log.debug('Checking for local IPFS file: ' + filepath);
             if (fs_1.default.existsSync(filepath))
                 return fs_1.default.readFileSync(filepath, { encoding: 'utf8' });
