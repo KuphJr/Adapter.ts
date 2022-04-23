@@ -15,26 +15,26 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Sandbox = void 0;
 const axios_1 = __importDefault(require("axios"));
 const process_1 = __importDefault(require("process"));
-const logger_1 = require("./logger");
+const Log_1 = require("./Log");
 const Validator_1 = require("./Validator");
 class Sandbox {
     static evaluate(nodeKey, type, javascriptString, vars) {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
-            const sandboxUrl = process_1.default.env.SANDBOXURL;
-            if (!sandboxUrl) {
-                throw new Error('SANDBOXURL was not provided in environement variables.');
-            }
+            if (!process_1.default.env.SANDBOXURL)
+                throw Error('SANDBOXURL was not provided in environement variables.');
             try {
-                const { data } = yield axios_1.default.post(sandboxUrl, {
+                const { data } = yield axios_1.default.post(process_1.default.env.SANDBOXURL, {
                     nodeKey,
                     js: javascriptString,
                     vars: vars
+                }, {
+                    timeout: process_1.default.env.SANDBOXTIMEOUT ? parseInt(process_1.default.env.SANDBOXTIMEOUT) : 14000
                 });
                 return Validator_1.Validator.validateOutput(type, data.result);
             }
             catch (error) {
-                (0, logger_1.log)(error);
+                Log_1.Log.error(error);
                 if ((_b = (_a = error === null || error === void 0 ? void 0 : error.response) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.error) {
                     throw error.response.data.error;
                 }

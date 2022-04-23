@@ -3,7 +3,7 @@
 ## Installation Instructions
 
 Pull the Docker image.
-`docker pull kuphjr/adapter.js`
+`docker pull kuphjr/adapter.js:0.2.1`
 
 Set the environment variables in a .env file.
 ```
@@ -19,7 +19,7 @@ GCS_PRIVATE_KEY=This is the private key copied from the Google Cloud key.json fi
 ```
 
 Run the Docker image.
-`docker run -p 8032:8032 -v {Path to any empty folder. This will be used to store cached data.}:/app/cache --env-file={path to env file} --restart=on-failure adapterjs-entry:0.2.`
+`docker run -p 8032:8032 -v {Path to any empty folder. This will be used to store cached data.}:/app/cache --env-file={path to env file} --restart=on-failure adapterjs-entry:0.2.1`
 
 ## Adapter.js Entry
 
@@ -104,6 +104,6 @@ All the parameters in the `data` object are provided in the on-chain request and
 
 For suggestions and support, please check out the [Adapter.js Discord community!](https://discord.com/invite/jpGx9tMRWa)
 
-docker build -t adapterjs-entry:0.2.1 .
+docker build -t adapterjs-entry:0.2.2 .
 
-docker run -p 8032:8032 -v C:/Users/kuphjr/Documents/cache:/app/cache --env-file=../.env --restart=on-failure adapterjs-entry:0.2.1
+docker run -p 8032:8032 -v C:/Users/kuphjr/Documents/cache:/app/cache --env-file=../.env --restart=on-failure adapterjs-entry:0.2.2

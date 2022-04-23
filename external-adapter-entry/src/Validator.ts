@@ -1,3 +1,6 @@
+import { utils } from 'ethers'
+import { buffer } from 'stream/consumers'
+
 interface UnvalidatedInput {
   nodeKey: string
   id?: string
@@ -35,7 +38,9 @@ export interface Variables {
   [variableName: string]: any
 }
 
-export type ValidOutput = boolean | string | number | boolean[] | string[] | number[] | Buffer
+export type ValidOutput = HexString
+
+export type HexString = string
 
 export class Validator {
   constructor () {}
@@ -48,19 +53,17 @@ export class Validator {
     if (typeof input.data.type !== 'string')
       throw Error("The parameter 'type' must be provided as a string.")
     switch (input.data.type) {
-      case ('bool'):
       case ('uint'):
       case ('uint256'):
       case ('int'):
       case ('int256'):
       case ('bytes32'):
       case ('string'):
-      case('byte[]'):
       case ('bytes'):
         break
       default:
         throw Error("Invalid value for the parameter 'type' which must be either " +
-        "'bool', 'uint', 'uint256', 'int', 'int256', 'bytes32', 'string', 'bytes' or 'byte[]'.")
+        "'uint', 'uint256', 'int', 'int256', 'bytes32', 'string' or 'bytes'.")
     }
     const validatedInput: ValidInput = { nodeKey: input.nodeKey, type: input.data.type }
 
@@ -127,60 +130,32 @@ export class Validator {
     return validatedInput as ValidInput
   }
 
-  static validateOutput(type: string, output: unknown): ValidOutput {
-    if (typeof output === 'undefined')
-      throw Error('The provided JavaScript did not return a value or returned an undefined value.')
-    switch (type) {
-      case ('bool'):
-        if (typeof output !== 'boolean')
-          throw Error('The returned value must be a boolean. Returned: ' + output)
-        break
-      case ('uint'): case ('uint256'):
-        if (typeof output !== 'number')
-          throw Error('The returned value must be a number. Returned: ' + output)
-        if (output % 1 !== 0 || output < 0)
-          throw Error('The returned value must be a positive integer. Returned: ' + output)
-        break
-      case ('int'): case ('int256'):
-        if (typeof output !== 'number')
-          throw Error('The returned value must be a number. Returned: ' + output)
-        if (output % 1 !== 0)
-          throw Error('The returned value must be an integer. Returned: ' + output)
-        break
-      case ('string'):
-        if (typeof output !== 'string')
-          throw Error('The returned value must be a string. Returned: ' + output)
-        break
-      case ('bytes32'): case ('bytes'): case ('byte[]'):
-        break
+  static validateOutput(requestedType: string, output: unknown): HexString {
+    if (typeof output !== 'string')
+      throw Error('The returned must be a valid hex string')
+    switch(requestedType) {
+      case('int'): case('int256'): case('uint'): case('uint256'): case('bytes32'):
+        if (output.length > 66 || !utils.isHexString(output))
+          throw Error('The returned value must be a 32 byte hex string preceded with "0x".')
+        return utils.hexZeroPad(output, 32)
+      case('bytes'): case('string'):
+        if (output.length > 2050 || !utils.isHexString(output))
+          throw Error('The returned value must be a lowercase hex string of 1024 bytes or less preceded with "0x".')
+        return output
       default:
-        throw Error("Invalid value for the parameter 'type' which must be either " +
-        "'bool', 'uint', 'uint256', 'int', 'int256', 'bytes32', 'string' or 'bytes'.")
-    }
-    if (Validator.isValidOutput(output))
-      return output
-    else
-      throw Error('Invalid output.')
-  }
-
-  static isValidOutput = (output: unknown): output is ValidOutput => {
-    if (JSON.stringify(output).length > 1000)
-      throw new Error('The output returned by the JavaScript code is larger than 1 KB')
-    switch (typeof output) {
-      case 'boolean':
-        return true
-      case 'string':
-      case 'number':
-        return true
-      case 'object':
-        if (Buffer.isBuffer(output))
-          return true
-      default:
-        throw new Error("The output returned by the JavaScript code is not of type 'boolean', 'number', 'string', or 'Buffer'.")
+        throw Error(`The returned type ${typeof output} is invalid.`)
     }
   }
 
-  private static isVariables = (variables: unknown): variables is Variables => {
+  static isBytes32String = (input: unknown): boolean => {
+    if (typeof input !== 'string')
+      return false
+    if (input.length === 66 && utils.isHexString(input))
+      return true
+    return false
+  }
+
+  static isVariables = (variables: unknown): variables is Variables => {
     if (typeof variables !== 'object')
       return false
     if (Array.isArray(variables))

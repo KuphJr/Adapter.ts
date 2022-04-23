@@ -70,12 +70,7 @@ class Sandbox {
         const dirents = fs_1.default.readdirSync(os_1.default.tmpdir());
         dirents.forEach(dirent => {
             try {
-                if (fs_1.default.lstatSync(path_1.default.join(os_1.default.tmpdir(), dirent)).isDirectory()) {
-                    fs_1.default.rmdirSync(path_1.default.join(os_1.default.tmpdir(), dirent), { recursive: true });
-                }
-                else {
-                    fs_1.default.rmSync(path_1.default.join(os_1.default.tmpdir(), dirent));
-                }
+                fs_1.default.rmSync(path_1.default.join(os_1.default.tmpdir(), dirent), { recursive: true });
             }
             catch (error) { }
         });

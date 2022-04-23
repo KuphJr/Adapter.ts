@@ -12,7 +12,7 @@ import type { Variables } from '../../src/Validator'
 // Just ignore this error.  If all tests pass, the Sandbox is working as expected.
 
 describe("Sandbox", () => {
-  it('Should execute code with external dependency (axios)', async () => {
+  it('Should execute code', async () => {
     const input = {
       vars: {
         myNum: 100,
@@ -27,7 +27,7 @@ describe("Sandbox", () => {
     expect(await Sandbox.evaluate(input.js, input.vars as Variables)).toBe(200)
   })
 
-  it('Should execute async code with external dependency (axios)', async () => {
+  it('Should execute async code with external dependency', async () => {
     const input = {
       vars: {
         myNum: 100,
