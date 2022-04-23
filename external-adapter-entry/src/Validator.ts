@@ -147,14 +147,6 @@ export class Validator {
     }
   }
 
-  static isBytes32String = (input: unknown): boolean => {
-    if (typeof input !== 'string')
-      return false
-    if (input.length === 66 && utils.isHexString(input))
-      return true
-    return false
-  }
-
   static isVariables = (variables: unknown): variables is Variables => {
     if (typeof variables !== 'object')
       return false
