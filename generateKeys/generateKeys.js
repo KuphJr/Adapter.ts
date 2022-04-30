@@ -37,4 +37,4 @@ const publicKey = keys.publicKey.replace('-----BEGIN RSA PUBLIC KEY-----\n', '')
 const privateKey = keys.privateKey.replace('-----BEGIN RSA PRIVATE KEY-----\n', '').replace('\n-----END RSA PRIVATE KEY-----\n', '').replace(/\n/g, '');
 fs.writeFileSync(path.join(__dirname, 'publicKey.txt'), publicKey);
 fs.writeFileSync(path.join(__dirname, 'privateKey.txt'), privateKey);
-console.log(`PUBLICKEY:\n${publicKey}PRIVATEKEY:\n${privateKey}\nKeys have been stored in the files:\n${path.join(__dirname, 'publicKey.txt')}, ${path.join(__dirname, 'privateKey.txt')}`);
+console.log(`PUBLICKEY:\n${publicKey}\nPRIVATEKEY:\n${privateKey}\nKeys have been stored in the files:\n${path.join(__dirname, 'publicKey.txt')}, ${path.join(__dirname, 'privateKey.txt')}`);

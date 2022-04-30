@@ -22,6 +22,7 @@ dotenv_1.default.config({ path: path_1.default.join(__dirname, '..', '..', '.env
 const express_1 = __importDefault(require("express"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const cors_1 = __importDefault(require("cors"));
+const TimestampSignature_1 = require("./TimestampSignature");
 const index_1 = require("./index");
 const app = (0, express_1.default)();
 const port = process_1.default.env.EA_PORT || 8030;
@@ -34,15 +35,26 @@ app.options('*', (req, res) => {
 });
 app.use(body_parser_1.default.json());
 app.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // Take any data provided in the URL as a query and put that data into the request body.
-    for (const key in req.query) {
-        req.body[key] = req.query[key];
-    }
+    if (!process_1.default.env.PUBLICKEY)
+        throw Error('The public key must be set using the environment variable PUBLICKEY.');
+    const timestampSignature = new TimestampSignature_1.TimestampSignature('', process_1.default.env.PUBLICKEY);
+    const latencyToleranceMs = process_1.default.env.TOLERANCE ? parseInt(process_1.default.env.TOLERANCE) : 1000;
     index_1.Log.info('Request\n' + JSON.stringify(req.body));
     // Check to make sure the request is authorized
-    if (req.body.nodeKey != process_1.default.env.NODEKEY) {
-        res.status(401).json({ error: 'The nodeKey parameter is missing or invalid.' });
-        index_1.Log.error('The nodeKey parameter is missing or invalid.');
+    if (typeof req.body.timestamp !== 'number' || typeof req.body.signature !== 'string') {
+        res.status(401).json({ error: 'The timestamp and/or signature are missing or invalid.' });
+        index_1.Log.error('The timestamp and/or signature are missing.');
+        return;
+    }
+    const currentTime = Date.now();
+    if (Math.abs(currentTime - parseInt(req.body.timestamp)) > latencyToleranceMs) {
+        res.status(401).json({ error: 'The timestamp is beyond the latency threshold bounds.' });
+        index_1.Log.error('The timestamp is beyond the latency threshold bounds.');
+        return;
+    }
+    if (!timestampSignature.verifySignature(req.body.timestamp.toString(), req.body.signature)) {
+        res.status(401).json({ error: 'The signature is invalid.' });
+        index_1.Log.error('The signature is invalid.');
         return;
     }
     try {

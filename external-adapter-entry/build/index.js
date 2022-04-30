@@ -41,7 +41,6 @@ const createRequest = (input, ipfsFetcher, dataStorage, callback) => __awaiter(v
         try {
             const privateData = yield dataStorage.retrieveData(validatedInput.contractAddress, validatedInput.ref);
             Log_1.Log.debug(JSON.stringify(privateData));
-            javascriptString = privateData.js;
             vars = privateData.vars || {};
         }
         catch (untypedError) {

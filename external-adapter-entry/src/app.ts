@@ -16,13 +16,10 @@ import { Log } from './Log'
 import { IpfsFetcher } from './IpfsFetcher'
 import { DataStorage } from './GoogleCloudStorage'
 
-
 if (!process.env.PRIVATEKEY)
   throw Error('Setup Error: The PRIVATEKEY environment variable has not been set.')
 if (!process.env.WEB3STORAGETOKEN)
   throw Error('Setup Error: The WEB3STORAGETOKEN environment variable has not been set.')
-if (!process.env.SANDBOXURL)
-  throw Error('Setup Error: The SANDBOXURL environment variable has not been set.')
 
 const dataStorage = new DataStorage(process.env.PRIVATEKEY)
 const ipfsFetcher = new IpfsFetcher(process.env.WEB3STORAGETOKEN)

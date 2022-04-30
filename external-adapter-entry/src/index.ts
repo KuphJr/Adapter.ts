@@ -52,7 +52,6 @@ export const createRequest = async (
     try {
       const privateData = await dataStorage.retrieveData(validatedInput.contractAddress, validatedInput.ref)
       Log.debug(JSON.stringify(privateData))
-      javascriptString = privateData.js
       vars = privateData.vars || {}
     } catch (untypedError) {
       const error = untypedError as Error

@@ -9,7 +9,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 
 import { createRequest, Result } from './index'
-import { log } from './logger'
+import { Log } from './Log'
 
 // load environmental variables from .env file
 dotenv.config({ path: path.join(__dirname, '..', '..', '.env')})
@@ -29,18 +29,15 @@ app.options('*', (req, res) => {
 app.use(bodyParser.json())
 
 app.post('/', async (req: express.Request, res: express.Response) => {
-  // Take any data provided in the URL as a query and put that data into the request body.
-  for (const key in req.query) {
-    req.body[key] = req.query[key]
-  }
+  Log.info('Input\n' + JSON.stringify(req.body))
   try {
     await createRequest(req.body, (status: number, result: Result) => {
-      log('RESULT: ' + JSON.stringify(result))
+      Log.info('Result\n' + JSON.stringify(result))
       res.status(status).json(result)
     })
   } catch (untypedError) {
     const error = untypedError as Error
-    log('ERROR: ' + error.toString())
+    Log.error(error.toString())
   }
 })
 

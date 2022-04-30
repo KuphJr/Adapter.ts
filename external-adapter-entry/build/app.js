@@ -32,8 +32,6 @@ if (!process_1.default.env.PRIVATEKEY)
     throw Error('Setup Error: The PRIVATEKEY environment variable has not been set.');
 if (!process_1.default.env.WEB3STORAGETOKEN)
     throw Error('Setup Error: The WEB3STORAGETOKEN environment variable has not been set.');
-if (!process_1.default.env.SANDBOXURL)
-    throw Error('Setup Error: The SANDBOXURL environment variable has not been set.');
 const dataStorage = new GoogleCloudStorage_1.DataStorage(process_1.default.env.PRIVATEKEY);
 const ipfsFetcher = new IpfsFetcher_1.IpfsFetcher(process_1.default.env.WEB3STORAGETOKEN);
 const app = (0, express_1.default)();

@@ -4,6 +4,14 @@ import process from 'process'
 import { Log } from './Log'
 import { HexString, Validator, ValidOutput } from './Validator'
 import type { Variables } from './Validator'
+import { TimestampSignature } from './TimestampSigner'
+
+if (!process.env.SANDBOXURL)
+  throw Error('Setup Error: The SANDBOXURL environment variable has not been set.')
+if (!process.env.PRIVATEKEY)
+  throw Error('Setup Error: The SANDBOXURL environment variable has not been set.')
+
+const timestampSignature = new TimestampSignature(process.env.PRIVATEKEY)
 
 export class Sandbox {
   static async evaluate (
@@ -14,11 +22,13 @@ export class Sandbox {
   ): Promise<HexString> {
     if (!process.env.SANDBOXURL)
       throw Error('SANDBOXURL was not provided in environement variables.')
+    const timestamp = Date.now()
     try {
       const { data } = await axios.post(
         process.env.SANDBOXURL,
         {
-          nodeKey,
+          timestamp,
+          signature: timestampSignature.generateSignature(timestamp.toString()),
           js: javascriptString,
           vars: vars
         },
