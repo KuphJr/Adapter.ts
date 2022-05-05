@@ -11,8 +11,7 @@ describe("StoredDataValidator", () => {
         myArray: [ 0, 1, 2 ],
         myObject: {
           key: 1
-        },
-        js: "const axios = require('axios'); const res = await axios.get(myString); const id = res.data.id; return id * myNum;"
+        }
       }
     }
     expect(StoredDataValidator.isValidStoredData(storedData)).toBe(true)
@@ -28,8 +27,7 @@ describe("StoredDataValidator", () => {
         myArray: [ 0, 1, 2 ],
         myObject: {
           key: 1
-        },
-        js: "const axios = require('axios'); const res = await axios.get(myString); const id = res.data.id; return id * myNum;"
+        }
       }
     }
     expect(() => { StoredDataValidator.isValidStoredData(badAddr) }).toThrow()
@@ -45,8 +43,7 @@ describe("StoredDataValidator", () => {
         myArray: [ 0, 1, 2 ],
         myObject: {
           key: 1
-        },
-        js: "const axios = require('axios'); const res = await axios.get(myString); const id = res.data.id; return id * myNum;"
+        }
       }
     }
     expect(() => { StoredDataValidator.isValidStoredData(badAddr) }).toThrow()
@@ -62,8 +59,7 @@ describe("StoredDataValidator", () => {
         myArray: [ 0, 1, 2 ],
         myObject: {
           key: 1
-        },
-        js: "const axios = require('axios'); const res = await axios.get(myString); const id = res.data.id; return id * myNum;"
+        }
       }
     }
     expect(() => { StoredDataValidator.isValidStoredData(badRef) }).toThrow()
@@ -79,8 +75,7 @@ describe("StoredDataValidator", () => {
         myArray: [ 0, 1, 2 ],
         myObject: {
           key: 1
-        },
-        js: "const axios = require('axios'); const res = await axios.get(myString); const id = res.data.id; return id * myNum;"
+        }
       }
     }
     expect(() => { StoredDataValidator.isValidStoredData(badRef) }).toThrow()
