@@ -21,49 +21,50 @@ const Sandbox_1 = require("./Sandbox");
 //   throw Error('The public key must be set using the environment variable PUBLICKEY.')
 // const timestampSignature = new TimestampSignature('', process.env.PUBLICKEY)
 // const latencyToleranceMs = process.env.TOLERANCE ? parseInt(process.env.TOLERANCE) : 1000
-// // Export for FaaS deployment
-// exports.sandbox = async (req: Request, res: Response ) => {
-//   // set JSON content type and CORS headers for the response
-//   res.header('Content-Type', 'application/json')
-//   res.header('Access-Control-Allow-Origin', '*')
-//   res.header('Access-Control-Allow-Headers', 'Content-Type')
-//   // respond to CORS preflight requests
-//   if (req.method === 'OPTIONS') {
-//     res.set('Access-Control-Allow-Methods', 'GET')
-//     res.set('Access-Control-Allow-Headers', 'Content-Type')
-//     res.set('Access-Control-Max-Age', '3600')
-//     res.status(204).send('')
-//     return
-//   }
-//   Log.info('Input\n' + JSON.stringify(req.body))
-//   // Check to make sure the request is authorized
-//   if (typeof req.body.timestamp !== 'number' || typeof req.body.signature !== 'string') {
-//     res.status(401).json({ error: 'The timestamp and/or signature are missing or invalid.' })
-//     Log.error('The timestamp and/or signature are missing.')
-//     return
-//   }
-//   const currentTime = Date.now()
-//   if (Math.abs(currentTime - parseInt(req.body.timestamp)) > latencyToleranceMs) {
-//     res.status(401).json({ error: 'The timestamp is beyond the latency threshold bounds.' })
-//     Log.error('The timestamp is beyond the latency threshold bounds.')
-//     return
-//   }
-//   if (!timestampSignature.verifySignature(req.body.timestamp.toString(), req.body.signature)) {
-//     res.status(401).json({ error: 'The signature is invalid.' })
-//     Log.error('The signature is invalid.')
-//     return
-//   }
-//   try {
-//     await createRequest(req.body, (status: number, result: Result): void => {
-//       Log.info('Result\n' + JSON.stringify(result))
-//       res.status(status).json(result)
-//     })
-//   } catch (untypedError) {
-//     const error = untypedError as Error
-//     Log.error(error.toString())
-//     res.status(500).send(error.message)
-//   }
-// }
+// Export for FaaS deployment
+exports.sandbox = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // set JSON content type and CORS headers for the response
+    res.header('Content-Type', 'application/json');
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    // respond to CORS preflight requests
+    if (req.method === 'OPTIONS') {
+        res.set('Access-Control-Allow-Methods', 'GET');
+        res.set('Access-Control-Allow-Headers', 'Content-Type');
+        res.set('Access-Control-Max-Age', '3600');
+        res.status(204).send('');
+        return;
+    }
+    Log.info('Input: ' + JSON.stringify(req.body));
+    // Check to make sure the request is authorized
+    // if (typeof req.body.timestamp !== 'number' || typeof req.body.signature !== 'string') {
+    //   res.status(401).json({ error: 'The timestamp and/or signature are missing or invalid.' })
+    //   Log.error('The timestamp and/or signature are missing.')
+    //   return
+    // }
+    // const currentTime = Date.now()
+    // if (Math.abs(currentTime - parseInt(req.body.timestamp)) > latencyToleranceMs) {
+    //   res.status(401).json({ error: 'The timestamp is beyond the latency threshold bounds.' })
+    //   Log.error('The timestamp is beyond the latency threshold bounds.')
+    //   return
+    // }
+    // if (!timestampSignature.verifySignature(req.body.timestamp.toString(), req.body.signature)) {
+    //   res.status(401).json({ error: 'The signature is invalid.' })
+    //   Log.error('The signature is invalid.')
+    //   return
+    // }
+    try {
+        yield (0, exports.createRequest)(req.body, (status, result) => {
+            Log.info('Result: ' + JSON.stringify(result));
+            res.status(status).json(result);
+        });
+    }
+    catch (untypedError) {
+        const error = untypedError;
+        Log.error(error.toString());
+        res.status(500).send(error.message);
+    }
+});
 // Process request
 const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;

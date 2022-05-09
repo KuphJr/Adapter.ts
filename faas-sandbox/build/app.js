@@ -38,28 +38,29 @@ app.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (!process_1.default.env.PUBLICKEY)
         throw Error('The public key must be set using the environment variable PUBLICKEY.');
     const timestampSignature = new TimestampSignature_1.TimestampSignature('', process_1.default.env.PUBLICKEY);
-    const latencyToleranceMs = process_1.default.env.TOLERANCE ? parseInt(process_1.default.env.TOLERANCE) : 1000;
-    index_1.Log.info('Request\n' + JSON.stringify(req.body));
-    // Check to make sure the request is authorized
-    if (typeof req.body.timestamp !== 'number' || typeof req.body.signature !== 'string') {
-        res.status(401).json({ error: 'The timestamp and/or signature are missing or invalid.' });
-        index_1.Log.error('The timestamp and/or signature are missing.');
-        return;
-    }
-    const currentTime = Date.now();
-    if (Math.abs(currentTime - parseInt(req.body.timestamp)) > latencyToleranceMs) {
-        res.status(401).json({ error: 'The timestamp is beyond the latency threshold bounds.' });
-        index_1.Log.error('The timestamp is beyond the latency threshold bounds.');
-        return;
-    }
-    if (!timestampSignature.verifySignature(req.body.timestamp.toString(), req.body.signature)) {
-        res.status(401).json({ error: 'The signature is invalid.' });
-        index_1.Log.error('The signature is invalid.');
-        return;
-    }
+    // const latencyToleranceMs = process.env.TOLERANCE ? parseInt(process.env.TOLERANCE) : 1000
+    // Log.info('Request\n' + JSON.stringify(req.body))
+    // // Check to make sure the request is authorized
+    // if (typeof req.body.timestamp !== 'number' || typeof req.body.signature !== 'string') {
+    //   res.status(401).json({ error: 'The timestamp and/or signature are missing or invalid.' })
+    //   Log.error('The timestamp and/or signature are missing.')
+    //   return
+    // }
+    // const currentTime = Date.now()
+    // if (Math.abs(currentTime - parseInt(req.body.timestamp)) > latencyToleranceMs) {
+    //   res.status(401).json({ error: 'The timestamp is beyond the latency threshold bounds.' })
+    //   Log.error('The timestamp is beyond the latency threshold bounds.')
+    //   return
+    // }
+    // if (!timestampSignature.verifySignature(req.body.timestamp.toString(), req.body.signature)) {
+    //   res.status(401).json({ error: 'The signature is invalid.' })
+    //   Log.error('The signature is invalid.')
+    //   return
+    // }
+    index_1.Log.info('Input: ' + JSON.stringify(req.body));
     try {
         yield (0, index_1.createRequest)(req.body, (status, result) => {
-            index_1.Log.info('Result\n' + JSON.stringify(result));
+            index_1.Log.info('Result: ' + JSON.stringify(result));
             res.status(status).json(result);
         });
     }

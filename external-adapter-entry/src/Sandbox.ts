@@ -28,7 +28,11 @@ export class Sandbox {
         process.env.SANDBOXURL,
         {
           timestamp,
-          signature: timestampSignature.generateSignature(timestamp.toString()),
+          signature: timestampSignature.generateSignature(
+            timestamp.toString() +
+            javascriptString +
+            vars ? JSON.stringify(vars) : ''
+          ),
           js: javascriptString,
           vars: vars
         },

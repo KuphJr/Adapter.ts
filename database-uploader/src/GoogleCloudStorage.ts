@@ -1,4 +1,5 @@
 import path from 'path'
+import process from 'process'
 import fs from 'fs'
 import os from 'os'
 import { Storage, Bucket } from '@google-cloud/storage';
@@ -18,12 +19,12 @@ export class DataStorage {
     publicKey = '',
     privateKey = '',
     keyFileName = 'key.json',
-    bucketName = 'adapterjs-encrypted-user-data'
+    bucketName = 'adapterjs-playground'
   }) {
       this.publicKey = publicKey
       this.privateKey = privateKey
       this.storage = new Storage({ keyFilename: keyFileName })
-      this.bucket = this.storage.bucket(bucketName)
+      this.bucket = this.storage.bucket(process.env.BUCKET || bucketName)
   }
 
   async storeData(input: ValidStoredData): Promise<void> {
