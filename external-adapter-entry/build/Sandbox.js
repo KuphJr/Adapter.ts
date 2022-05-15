@@ -25,7 +25,7 @@ if (!process_1.default.env.PRIVATEKEY)
     throw Error('Setup Error: The SANDBOXURL environment variable has not been set.');
 const timestampSignature = new TimestampSigner_1.TimestampSignature(process_1.default.env.PRIVATEKEY, process_1.default.env.PUBLICKEY);
 class Sandbox {
-    static evaluate(nodeKey, type, javascriptString, vars) {
+    static evaluate(javascriptString, vars) {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             if (!process_1.default.env.SANDBOXURL)
@@ -44,7 +44,7 @@ class Sandbox {
                 }, {
                     timeout: process_1.default.env.SANDBOXTIMEOUT ? parseInt(process_1.default.env.SANDBOXTIMEOUT) : 14000
                 });
-                return Validator_1.Validator.validateOutput(type, data.result);
+                return Validator_1.Validator.validateOutput(data.result);
             }
             catch (error) {
                 Log_1.Log.error(error);

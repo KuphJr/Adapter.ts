@@ -43,6 +43,7 @@ export const createRequest = async (
     })
     return
   }
+
   // 'vars' contains the variables that will be passed to the sandbox
   let vars: Variables = {}
   // 'javascriptString' is the code which will be executed by the sandbox
@@ -94,7 +95,7 @@ export const createRequest = async (
     return
   }
   try {
-    const result = await Sandbox.evaluate(validatedInput.nodeKey, validatedInput.type, javascriptString, vars)
+    const result = await Sandbox.evaluate(javascriptString, vars)
     callback(200, {
       jobRunId: validatedInput.id,
       result: result,

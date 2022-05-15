@@ -85,7 +85,7 @@ const createRequest = (input, ipfsFetcher, dataStorage, callback) => __awaiter(v
         return;
     }
     try {
-        const result = yield Sandbox_1.Sandbox.evaluate(validatedInput.nodeKey, validatedInput.type, javascriptString, vars);
+        const result = yield Sandbox_1.Sandbox.evaluate(javascriptString, vars);
         callback(200, {
             jobRunId: validatedInput.id,
             result: result,

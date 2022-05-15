@@ -16,8 +16,6 @@ const timestampSignature = new TimestampSignature(process.env.PRIVATEKEY, proces
 
 export class Sandbox {
   static async evaluate (
-    nodeKey: string,
-    type: string,
     javascriptString: string,
     vars: Variables
   ): Promise<HexString> {
@@ -43,7 +41,7 @@ export class Sandbox {
           timeout: process.env.SANDBOXTIMEOUT ? parseInt(process.env.SANDBOXTIMEOUT) : 14000
         }
       )
-      return Validator.validateOutput(type, data.result)
+      return Validator.validateOutput(data.result)
     } catch (error: any) {
       Log.error(error)
       if (error?.response?.data?.error) {

@@ -5,26 +5,9 @@ const ethers_1 = require("ethers");
 class Validator {
     constructor() { }
     static validateInput(input) {
-        var _a, _b;
         if (!input.data)
             throw Error('No data input provided.');
-        // validate type
-        if (typeof input.data.type !== 'string')
-            throw Error("The parameter 'type' must be provided as a string.");
-        switch (input.data.type) {
-            case ('uint'):
-            case ('uint256'):
-            case ('int'):
-            case ('int256'):
-            case ('bytes32'):
-            case ('string'):
-            case ('bytes'):
-                break;
-            default:
-                throw Error("Invalid value for the parameter 'type' which must be either " +
-                    "'uint', 'uint256', 'int', 'int256', 'bytes32', 'string' or 'bytes'.");
-        }
-        const validatedInput = { nodeKey: input.nodeKey, type: input.data.type };
+        const validatedInput = {};
         // validate id
         if (!input.id)
             input.id = '1';
@@ -60,48 +43,21 @@ class Validator {
             if (typeof input.data.ref !== 'string')
                 throw Error("Invalid value for the parameter 'ref' which must be a string");
             validatedInput.ref = input.data.ref;
-            if (typeof ((_b = (_a = input.meta) === null || _a === void 0 ? void 0 : _a.oracleRequest) === null || _b === void 0 ? void 0 : _b.requester) !== 'string')
-                throw Error("Invalid jobspec setup.  Parameter 'meta.oracleRequest.requester' is required when referencing stored data.");
-            validatedInput.contractAddress = input.meta.oracleRequest.requester.toLowerCase();
+            if (typeof input.data.req !== 'string')
+                throw Error("Invalid value for the 'req' parameter which must be a valid address.");
+            validatedInput.contractAddress = input.data.req.toLowerCase();
         }
-        // validate cached & ttl
-        if (input.data.cached) {
-            if (typeof input.data.cached !== 'boolean')
-                throw Error("Invalid value for the parameter 'cached' which must be a boolean.");
-            validatedInput.cached = input.data.cached;
-        }
-        else if (input.data.ttl) {
-            throw Error("The 'ttl' parameter should not be provided if the 'cached' parameter is not provided.");
-        }
-        if (input.data.ttl && typeof input.data.ttl !== 'number')
-            throw Error("Invalid value for the parameter 'ttl' which must be a number in seconds.");
-        if (input.data.ttl)
-            validatedInput.ttl = input.data.ttl;
         // validate that js, cid or ref is present
-        if (!validatedInput.js && !validatedInput.cid && !validatedInput.ref)
-            throw Error("At least one of the parameters 'js', 'cid' or 'ref' must be provided.");
+        if (!validatedInput.js && !validatedInput.cid)
+            throw Error("At least one of the parameters 'js' or 'cid' must be provided.");
         return validatedInput;
     }
-    static validateOutput(requestedType, output) {
+    static validateOutput(output) {
         if (typeof output !== 'string')
             throw Error('The returned must be a valid hex string');
-        switch (requestedType) {
-            case ('int'):
-            case ('int256'):
-            case ('uint'):
-            case ('uint256'):
-            case ('bytes32'):
-                if (output.length > 66 || !ethers_1.utils.isHexString(output))
-                    throw Error('The returned value must be a 32 byte hex string preceded with "0x".');
-                return ethers_1.utils.hexZeroPad(output, 32);
-            case ('bytes'):
-            case ('string'):
-                if (output.length > 2050 || !ethers_1.utils.isHexString(output))
-                    throw Error('The returned value must be a lowercase hex string of 1024 bytes or less preceded with "0x".');
-                return output;
-            default:
-                throw Error(`The returned type ${typeof output} is invalid.`);
-        }
+        if (output.length > 66 || !ethers_1.utils.isHexString(output))
+            throw Error("The returned value must be a 32 byte hex string preceded with '0x'.");
+        return ethers_1.utils.hexZeroPad(output, 32);
     }
 }
 exports.Validator = Validator;
