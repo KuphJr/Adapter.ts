@@ -16,11 +16,6 @@ exports.Log = exports.createRequest = void 0;
 const process_1 = __importDefault(require("process"));
 const Validator_1 = require("./Validator");
 const Sandbox_1 = require("./Sandbox");
-// import { TimestampSignature } from './TimestampSignature'
-// if (!process.env.PUBLICKEY)
-//   throw Error('The public key must be set using the environment variable PUBLICKEY.')
-// const timestampSignature = new TimestampSignature('', process.env.PUBLICKEY)
-// const latencyToleranceMs = process.env.TOLERANCE ? parseInt(process.env.TOLERANCE) : 1000
 // Export for FaaS deployment
 exports.sandbox = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // set JSON content type and CORS headers for the response
@@ -36,23 +31,6 @@ exports.sandbox = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return;
     }
     Log.info('Input: ' + JSON.stringify(req.body));
-    // Check to make sure the request is authorized
-    // if (typeof req.body.timestamp !== 'number' || typeof req.body.signature !== 'string') {
-    //   res.status(401).json({ error: 'The timestamp and/or signature are missing or invalid.' })
-    //   Log.error('The timestamp and/or signature are missing.')
-    //   return
-    // }
-    // const currentTime = Date.now()
-    // if (Math.abs(currentTime - parseInt(req.body.timestamp)) > latencyToleranceMs) {
-    //   res.status(401).json({ error: 'The timestamp is beyond the latency threshold bounds.' })
-    //   Log.error('The timestamp is beyond the latency threshold bounds.')
-    //   return
-    // }
-    // if (!timestampSignature.verifySignature(req.body.timestamp.toString(), req.body.signature)) {
-    //   res.status(401).json({ error: 'The signature is invalid.' })
-    //   Log.error('The signature is invalid.')
-    //   return
-    // }
     try {
         yield (0, exports.createRequest)(req.body, (status, result) => {
             Log.info('Result: ' + JSON.stringify(result));

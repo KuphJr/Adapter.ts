@@ -43,8 +43,6 @@ export class Validator {
   private static checkRequestAuthorization = (requestBody: AuthorizedValidRequest) => {
     if (typeof requestBody.signature !== 'string')
       throw Error('Signature is missing or invalid')
-    if (typeof requestBody.requestHash !== 'string')
-      throw Error('RequestHash is missing or invalid')
     if (typeof requestBody.timestamp !== 'number')
       throw Error('Timestamp is missing or invalid')
     if (Math.abs(Date.now() - requestBody.timestamp) > latencyToleranceMs)
@@ -53,7 +51,7 @@ export class Validator {
       requestBody.timestamp.toString() +
       requestBody.js +
       requestBody.vars ? JSON.stringify(requestBody.vars) : ''
-    )
+    ).toString()
     if(!timestampSignature.verifySignature(requestHash.toString(), requestBody.signature))
       throw Error('The signature for the request is invalid')
   }

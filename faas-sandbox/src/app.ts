@@ -9,7 +9,6 @@ dotenv.config({ path: path.join(__dirname, '..', '..', '.env')})
 import express from 'express'
 import bodyParser from 'body-parser'
 import cors from 'cors'
-import { TimestampSignature } from './TimestampSignature'
 
 import { createRequest, Result, Log } from './index'
 

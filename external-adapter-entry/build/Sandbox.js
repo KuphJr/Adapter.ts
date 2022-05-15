@@ -17,12 +17,13 @@ const axios_1 = __importDefault(require("axios"));
 const process_1 = __importDefault(require("process"));
 const Log_1 = require("./Log");
 const Validator_1 = require("./Validator");
+const crypto_js_1 = require("crypto-js");
 const TimestampSigner_1 = require("./TimestampSigner");
 if (!process_1.default.env.SANDBOXURL)
     throw Error('Setup Error: The SANDBOXURL environment variable has not been set.');
 if (!process_1.default.env.PRIVATEKEY)
     throw Error('Setup Error: The SANDBOXURL environment variable has not been set.');
-const timestampSignature = new TimestampSigner_1.TimestampSignature(process_1.default.env.PRIVATEKEY);
+const timestampSignature = new TimestampSigner_1.TimestampSignature(process_1.default.env.PRIVATEKEY, process_1.default.env.PUBLICKEY);
 class Sandbox {
     static evaluate(nodeKey, type, javascriptString, vars) {
         var _a, _b;
@@ -31,9 +32,13 @@ class Sandbox {
                 throw Error('SANDBOXURL was not provided in environement variables.');
             const timestamp = Date.now();
             try {
+                const requestHash = (0, crypto_js_1.SHA256)(timestamp.toString() +
+                    javascriptString +
+                    vars ? JSON.stringify(vars) : '').toString();
+                const signature = timestampSignature.generateSignature(requestHash);
                 const { data } = yield axios_1.default.post(process_1.default.env.SANDBOXURL, {
                     timestamp,
-                    signature: timestampSignature.generateSignature(timestamp.toString()),
+                    signature,
                     js: javascriptString,
                     vars: vars
                 }, {
