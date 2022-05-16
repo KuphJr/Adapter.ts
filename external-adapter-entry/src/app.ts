@@ -66,15 +66,21 @@ app.post('/', async (req: express.Request, res: express.Response) => {
   // validate if request is made by an authorized aggregator contract
   if (req.body.meta?.oracleRequest?.requester?.toLowerCase() !== process.env.AGGREGATOR_CONTRACT_ADDR?.toLowerCase())
     throw Error("Invalid setup. The requesting contract must be set using the 'AGGREGATOR_CONTRACT_ADDR' environment variable.")
-  if (typeof req.body.hashedResponse === 'string') {
-    if (req.body.hashedResponse.length !== 66)
+  if (req.body.getUnhashedResponse) {
+    if (typeof req.body.data.hash === 'string' && req.body.data.hash.length !== 66) {
       res.status(400).send("Invalid parameter for 'hashedResponse'")
-    if (!cachedResponses[req.body.hashedResponse])
+      return
+    }  
+    if (!cachedResponses[req.body.data.hash]) {
       res.status(400).send("No value found for the provided 'hashedResponse'")
-    const [ response, salt ] = cachedResponses[req.body.hashedResponse]
+      return
+    }
+    const [ response, salt ] = cachedResponses[req.body.data.hash]
+    delete cachedResponses[req.body.data.hash]
     res.status(200).json({
       jobRunId: req.body.id,
-      result: response + utils.hexZeroPad('0x' + salt.toString(16), 32).slice(2),
+      result: response,
+      salt: utils.hexZeroPad('0x' + salt.toString(16), 8),
       statusCode: 200,
       status: 'ok'
     })
@@ -85,12 +91,12 @@ app.post('/', async (req: express.Request, res: express.Response) => {
       (status: number, result: Result) => {
         const salt = BigInt(randomInt(0, 281474976710655))
         if (result.result) {
-          Log.info('Response / 2: ' + BigInt(result.result) / BigInt(2))
-          Log.info('Salt: ' + salt.toString(16))
-          Log.info('Response & Salt Before Hashing: ' + (BigInt(result.result) / BigInt(2) + salt).toString(16))
+          Log.debug('Response / 2: ' + BigInt(result.result) / BigInt(2))
+          Log.debug('Salt: ' + salt.toString(16))
+          Log.debug('Response & Salt Before Hashing: ' + (BigInt(result.result) / BigInt(2) + salt).toString(16))
           const hashedResponse = utils.keccak256('0x' + (BigInt(result.result) / BigInt(2) + salt).toString(16))
           cachedResponses[hashedResponse] = [ result.result, salt ]
-          Log.info('Hashed Response: ' + hashedResponse)
+          Log.debug('Hashed Response: ' + hashedResponse)
           result.result = hashedResponse
         }
         res.status(status).json(result)

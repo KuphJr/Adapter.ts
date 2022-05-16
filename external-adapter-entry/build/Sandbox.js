@@ -47,7 +47,7 @@ class Sandbox {
                 return Validator_1.Validator.validateOutput(data.result);
             }
             catch (error) {
-                Log_1.Log.error(error);
+                Log_1.Log.debug('Sandbox error: ' + JSON.stringify(error));
                 if ((_b = (_a = error === null || error === void 0 ? void 0 : error.response) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.error) {
                     throw error.response.data.error;
                 }

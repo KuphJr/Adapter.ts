@@ -107,3 +107,6 @@ For suggestions and support, please check out the [Adapter.js Discord community!
 docker build -t adapterjs-entry:0.2.2 .
 
 docker run -p 8032:8032 -v C:/Users/kuphjr/Documents/cache:/app/cache --env-file=../.env --restart=on-failure adapterjs-entry:0.2.2
+
+docker build -t kuphjr/adapter.js:0.2.8 .
+docker run -p 8032:8032 -v C:/Users/kuphjr/Documents/cache:/app/cache --env-file=../.env --restart=on-failure kuphjr/adapter.js:0.2.8

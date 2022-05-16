@@ -31,7 +31,7 @@ export class DataStorage {
     if (this.publicKey === '')
       throw new Error('Public key has not been provided.')
     const encryptedObj = Encryptor.encrypt(this.publicKey, input)
-    const filename = SHA256(input.contractAddress + input.ref).toString() + '.json'
+    const filename = SHA256(input.contractAddress.toLowerCase() + input.ref).toString() + '.json'
     const file = this.bucket.file(filename)
     const fileExists = await file.exists()
     if (fileExists[0])

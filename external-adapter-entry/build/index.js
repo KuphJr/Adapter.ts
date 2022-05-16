@@ -94,7 +94,8 @@ const createRequest = (input, ipfsFetcher, dataStorage, callback) => __awaiter(v
         });
     }
     catch (untypedError) {
-        if (untypedError.name === 'JavaScript Error') {
+        if (untypedError.name.includes('JavaScript Compilation Error') ||
+            untypedError.name.includes('JavaScript Runtime Error')) {
             const error = untypedError;
             callback(406, new Errors_1.JavaScriptError({
                 jobRunID: validatedInput.id,

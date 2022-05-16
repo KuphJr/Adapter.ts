@@ -43,7 +43,7 @@ export class Sandbox {
       )
       return Validator.validateOutput(data.result)
     } catch (error: any) {
-      Log.error(error)
+      Log.debug('Sandbox error: ' + JSON.stringify(error))
       if (error?.response?.data?.error) {
         throw error.response.data.error
       } else {

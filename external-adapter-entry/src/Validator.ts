@@ -1,5 +1,4 @@
 import { utils } from 'ethers'
-import process from 'process'
 
 interface UnvalidatedInput {
   id?: string

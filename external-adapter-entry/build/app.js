@@ -69,15 +69,21 @@ app.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // validate if request is made by an authorized aggregator contract
     if (((_d = (_c = (_b = req.body.meta) === null || _b === void 0 ? void 0 : _b.oracleRequest) === null || _c === void 0 ? void 0 : _c.requester) === null || _d === void 0 ? void 0 : _d.toLowerCase()) !== ((_e = process_1.default.env.AGGREGATOR_CONTRACT_ADDR) === null || _e === void 0 ? void 0 : _e.toLowerCase()))
         throw Error("Invalid setup. The requesting contract must be set using the 'AGGREGATOR_CONTRACT_ADDR' environment variable.");
-    if (typeof req.body.hashedResponse === 'string') {
-        if (req.body.hashedResponse.length !== 66)
+    if (req.body.getUnhashedResponse) {
+        if (typeof req.body.data.hash === 'string' && req.body.data.hash.length !== 66) {
             res.status(400).send("Invalid parameter for 'hashedResponse'");
-        if (!cachedResponses[req.body.hashedResponse])
+            return;
+        }
+        if (!cachedResponses[req.body.data.hash]) {
             res.status(400).send("No value found for the provided 'hashedResponse'");
-        const [response, salt] = cachedResponses[req.body.hashedResponse];
+            return;
+        }
+        const [response, salt] = cachedResponses[req.body.data.hash];
+        delete cachedResponses[req.body.data.hash];
         res.status(200).json({
             jobRunId: req.body.id,
-            result: response + ethers_1.utils.hexZeroPad('0x' + salt.toString(16), 32).slice(2),
+            result: response,
+            salt: ethers_1.utils.hexZeroPad('0x' + salt.toString(16), 8),
             statusCode: 200,
             status: 'ok'
         });
@@ -87,12 +93,12 @@ app.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         yield (0, index_1.createRequest)(req.body, ipfsFetcher, dataStorage, (status, result) => {
             const salt = BigInt((0, crypto_1.randomInt)(0, 281474976710655));
             if (result.result) {
-                Log_1.Log.info('Response / 2: ' + BigInt(result.result) / BigInt(2));
-                Log_1.Log.info('Salt: ' + salt.toString(16));
-                Log_1.Log.info('Response & Salt Before Hashing: ' + (BigInt(result.result) / BigInt(2) + salt).toString(16));
+                Log_1.Log.debug('Response / 2: ' + BigInt(result.result) / BigInt(2));
+                Log_1.Log.debug('Salt: ' + salt.toString(16));
+                Log_1.Log.debug('Response & Salt Before Hashing: ' + (BigInt(result.result) / BigInt(2) + salt).toString(16));
                 const hashedResponse = ethers_1.utils.keccak256('0x' + (BigInt(result.result) / BigInt(2) + salt).toString(16));
                 cachedResponses[hashedResponse] = [result.result, salt];
-                Log_1.Log.info('Hashed Response: ' + hashedResponse);
+                Log_1.Log.debug('Hashed Response: ' + hashedResponse);
                 result.result = hashedResponse;
             }
             res.status(status).json(result);

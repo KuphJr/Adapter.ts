@@ -103,13 +103,15 @@ export const createRequest = async (
       status: 'ok'
     })
   } catch (untypedError) {
-    if ((untypedError as JavaScriptError).name === 'JavaScript Error') {
+    if (
+      (untypedError as JavaScriptError).name.includes('JavaScript Compilation Error') ||
+      (untypedError as JavaScriptError).name.includes('JavaScript Runtime Error')
+    ) {
       const error = untypedError as JavaScriptError
       callback(406, new JavaScriptError({
         jobRunID: validatedInput.id,
         name: error.name,
-        message: error.message,
-        details: error.details
+        message: error.message
       }).toJSONResponse())
     } else {
       const error = untypedError as Error
