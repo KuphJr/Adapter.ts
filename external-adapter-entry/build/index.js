@@ -100,8 +100,7 @@ const createRequest = (input, ipfsFetcher, dataStorage, callback) => __awaiter(v
             callback(406, new Errors_1.JavaScriptError({
                 jobRunID: validatedInput.id,
                 name: error.name,
-                message: error.message,
-                details: error.details
+                message: error.message
             }).toJSONResponse());
         }
         else {
