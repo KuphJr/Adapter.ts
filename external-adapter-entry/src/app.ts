@@ -64,19 +64,24 @@ app.post('/', async (req: express.Request, res: express.Response) => {
     return
   }
   // validate if request is made by an authorized aggregator contract
-  if (req.body.meta?.oracleRequest?.requester?.toLowerCase() !== process.env.AGGREGATOR_CONTRACT_ADDR?.toLowerCase())
-    throw Error("Invalid setup. The requesting contract must be set using the 'AGGREGATOR_CONTRACT_ADDR' environment variable.")
+  if (req.body.meta?.oracleRequest?.requester?.toLowerCase() !== process.env.AGGREGATOR_CONTRACT_ADDR?.toLowerCase()) {
+    Log.error(`Requester ${req.body.meta?.oracleRequest?.requester?.toLowerCase()} does not match AGGREATOR_CONTRACT_ADDR environment variable ${process.env.AGGREGATOR_CONTRACT_ADDR?.toLowerCase()}`)
+    res.status(401).json({ error: `Requester ${req.body.meta?.oracleRequest?.requester?.toLowerCase()} does not match AGGREATOR_CONTRACT_ADDR environment variable ${process.env.AGGREGATOR_CONTRACT_ADDR?.toLowerCase()}` })
+    return
+  }
   if (req.body.getUnhashedResponse) {
-    if (typeof req.body.data.hash === 'string' && req.body.data.hash.length !== 66) {
-      res.status(400).send("Invalid parameter for 'hashedResponse'")
+    if (typeof req.body.data.hash === 'string' && req.body.data.hash.length !== 64) {
+      res.status(400).json({ error: "Invalid parameter for 'hashedResponse'" })
       return
     }  
-    if (!cachedResponses[req.body.data.hash]) {
-      res.status(400).send("No value found for the provided 'hashedResponse'")
+    if (!cachedResponses['0x' + req.body.data.hash]) {
+      Log.error(`No value found for the provided hash: ${'0x' + req.body.data.hash}`)
+      res.status(400).json({ error: `No value found for the provided hash: ${'0x' + req.body.data.hash}` })
       return
     }
-    const [ response, salt ] = cachedResponses[req.body.data.hash]
-    delete cachedResponses[req.body.data.hash]
+    Log.debug(`found cached response ${cachedResponses['0x' + req.body.data.hash]}`)
+    const [ response, salt ] = cachedResponses['0x' + req.body.data.hash]
+    delete cachedResponses['0x' + req.body.data.hash]
     res.status(200).json({
       jobRunId: req.body.id,
       result: response,

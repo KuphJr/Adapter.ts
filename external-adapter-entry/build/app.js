@@ -50,7 +50,7 @@ app.options('*', (req, res) => {
 });
 app.use(body_parser_1.default.json());
 app.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b, _c, _d, _e;
+    var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
     // respond to CORS preflight requests
     if (req.method === 'OPTIONS') {
         res.set('Access-Control-Allow-Methods', 'GET');
@@ -67,19 +67,24 @@ app.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return;
     }
     // validate if request is made by an authorized aggregator contract
-    if (((_d = (_c = (_b = req.body.meta) === null || _b === void 0 ? void 0 : _b.oracleRequest) === null || _c === void 0 ? void 0 : _c.requester) === null || _d === void 0 ? void 0 : _d.toLowerCase()) !== ((_e = process_1.default.env.AGGREGATOR_CONTRACT_ADDR) === null || _e === void 0 ? void 0 : _e.toLowerCase()))
-        throw Error("Invalid setup. The requesting contract must be set using the 'AGGREGATOR_CONTRACT_ADDR' environment variable.");
+    if (((_d = (_c = (_b = req.body.meta) === null || _b === void 0 ? void 0 : _b.oracleRequest) === null || _c === void 0 ? void 0 : _c.requester) === null || _d === void 0 ? void 0 : _d.toLowerCase()) !== ((_e = process_1.default.env.AGGREGATOR_CONTRACT_ADDR) === null || _e === void 0 ? void 0 : _e.toLowerCase())) {
+        Log_1.Log.error(`Requester ${(_h = (_g = (_f = req.body.meta) === null || _f === void 0 ? void 0 : _f.oracleRequest) === null || _g === void 0 ? void 0 : _g.requester) === null || _h === void 0 ? void 0 : _h.toLowerCase()} does not match AGGREATOR_CONTRACT_ADDR environment variable ${(_j = process_1.default.env.AGGREGATOR_CONTRACT_ADDR) === null || _j === void 0 ? void 0 : _j.toLowerCase()}`);
+        res.status(401).json({ error: `Requester ${(_m = (_l = (_k = req.body.meta) === null || _k === void 0 ? void 0 : _k.oracleRequest) === null || _l === void 0 ? void 0 : _l.requester) === null || _m === void 0 ? void 0 : _m.toLowerCase()} does not match AGGREATOR_CONTRACT_ADDR environment variable ${(_o = process_1.default.env.AGGREGATOR_CONTRACT_ADDR) === null || _o === void 0 ? void 0 : _o.toLowerCase()}` });
+        return;
+    }
     if (req.body.getUnhashedResponse) {
-        if (typeof req.body.data.hash === 'string' && req.body.data.hash.length !== 66) {
-            res.status(400).send("Invalid parameter for 'hashedResponse'");
+        if (typeof req.body.data.hash === 'string' && req.body.data.hash.length !== 64) {
+            res.status(400).json({ error: "Invalid parameter for 'hashedResponse'" });
             return;
         }
-        if (!cachedResponses[req.body.data.hash]) {
-            res.status(400).send("No value found for the provided 'hashedResponse'");
+        if (!cachedResponses['0x' + req.body.data.hash]) {
+            Log_1.Log.error(`No value found for the provided hash: ${'0x' + req.body.data.hash}`);
+            res.status(400).json({ error: `No value found for the provided hash: ${'0x' + req.body.data.hash}` });
             return;
         }
-        const [response, salt] = cachedResponses[req.body.data.hash];
-        delete cachedResponses[req.body.data.hash];
+        Log_1.Log.debug(`found cached response ${cachedResponses['0x' + req.body.data.hash]}`);
+        const [response, salt] = cachedResponses['0x' + req.body.data.hash];
+        delete cachedResponses['0x' + req.body.data.hash];
         res.status(200).json({
             jobRunId: req.body.id,
             result: response,

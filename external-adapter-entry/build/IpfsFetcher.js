@@ -32,11 +32,14 @@ class IpfsFetcher {
             // first, check local storage to see if the IPFS file has previously been fetched and stored
             const filepath = path_1.default.join(this.persistantStorageDir, `${cid}.js`);
             Log_1.Log.debug('Checking for local IPFS file: ' + filepath);
-            if (fs_1.default.existsSync(filepath))
+            if (fs_1.default.existsSync(filepath)) {
+                Log_1.Log.debug(`Found IPFS file locally in ${filepath}`);
                 return fs_1.default.readFileSync(filepath, { encoding: 'utf8' });
+            }
             if (typeof process_1.default.env.WEB3STORAGETOKEN !== 'string')
                 throw new Error(`WEB3STORAGETOKEN was not provided in the environment variables.`);
             const client = new web3_storage_1.Web3Storage({ token: this.token });
+            Log_1.Log.debug(`Not in local storage. Fetching CID '${cid}' from IPFS.`);
             const archive = yield client.get(cid);
             if (!archive)
                 throw new Error(`Failed to fetch IPFS file with content ID ${cid}.`);
