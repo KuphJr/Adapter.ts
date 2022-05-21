@@ -85,13 +85,15 @@ app.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         Log_1.Log.debug(`found cached response ${cachedResponses['0x' + req.body.data.hash]}`);
         const [response, salt] = cachedResponses['0x' + req.body.data.hash];
         delete cachedResponses['0x' + req.body.data.hash];
-        res.status(200).json({
+        const reply = {
             jobRunId: req.body.id,
             result: response,
-            salt: ethers_1.utils.hexZeroPad('0x' + salt.toString(16), 8),
+            salt: ethers_1.utils.hexZeroPad('0x' + salt.toString(16), 32),
             statusCode: 200,
             status: 'ok'
-        });
+        };
+        res.status(200).json(reply);
+        Log_1.Log.info('Response: ' + JSON.stringify(reply));
         return;
     }
     try {
@@ -101,7 +103,7 @@ app.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 Log_1.Log.debug('Response / 2: ' + BigInt(result.result) / BigInt(2));
                 Log_1.Log.debug('Salt: ' + salt.toString(16));
                 Log_1.Log.debug('Response & Salt Before Hashing: ' + (BigInt(result.result) / BigInt(2) + salt).toString(16));
-                const hashedResponse = ethers_1.utils.keccak256('0x' + (BigInt(result.result) / BigInt(2) + salt).toString(16));
+                const hashedResponse = ethers_1.utils.keccak256(ethers_1.utils.hexZeroPad('0x' + (BigInt(result.result) / BigInt(2) + salt).toString(16), 32));
                 cachedResponses[hashedResponse] = [result.result, salt];
                 Log_1.Log.debug('Hashed Response: ' + hashedResponse);
                 result.result = hashedResponse;

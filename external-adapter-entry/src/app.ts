@@ -82,13 +82,15 @@ app.post('/', async (req: express.Request, res: express.Response) => {
     Log.debug(`found cached response ${cachedResponses['0x' + req.body.data.hash]}`)
     const [ response, salt ] = cachedResponses['0x' + req.body.data.hash]
     delete cachedResponses['0x' + req.body.data.hash]
-    res.status(200).json({
+    const reply = {
       jobRunId: req.body.id,
       result: response,
-      salt: utils.hexZeroPad('0x' + salt.toString(16), 8),
+      salt: utils.hexZeroPad('0x' + salt.toString(16), 32),
       statusCode: 200,
       status: 'ok'
-    })
+    }
+    res.status(200).json(reply)
+    Log.info('Response: ' + JSON.stringify(reply))
     return
   }
   try {
@@ -99,7 +101,9 @@ app.post('/', async (req: express.Request, res: express.Response) => {
           Log.debug('Response / 2: ' + BigInt(result.result) / BigInt(2))
           Log.debug('Salt: ' + salt.toString(16))
           Log.debug('Response & Salt Before Hashing: ' + (BigInt(result.result) / BigInt(2) + salt).toString(16))
-          const hashedResponse = utils.keccak256('0x' + (BigInt(result.result) / BigInt(2) + salt).toString(16))
+          const hashedResponse = utils.keccak256(
+            utils.hexZeroPad('0x' + (BigInt(result.result) / BigInt(2) + salt).toString(16), 32)
+          )
           cachedResponses[hashedResponse] = [ result.result, salt ]
           Log.debug('Hashed Response: ' + hashedResponse)
           result.result = hashedResponse
