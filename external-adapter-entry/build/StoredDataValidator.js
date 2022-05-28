@@ -16,8 +16,8 @@ class StoredDataValidator {
         // Check if the reference ID is valid
         if (typeof input.ref !== 'string')
             throw new Error(`The reference ID was not provided as a string.`);
-        if (input.ref.length > 32 || input.ref.length < 4)
-            throw new Error('The reference ID must contain at least 4 and at most 32 characters');
+        if (input.ref.length > 31 || input.ref.length < 4)
+            throw new Error('The reference ID must contain at least 4 and at most 31 characters');
         for (const char of input.ref) {
             if ((char < '0' || char > '9') && (char < 'a' || char > 'z') && (char < 'A' || char > 'Z'))
                 throw new Error('The reference ID can only contain alphabetical characters and numbers.');

@@ -10,34 +10,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createRequest = void 0;
-const logger_1 = require("./logger");
+const Log_1 = require("./Log");
 const StoredDataValidator_1 = require("./StoredDataValidator");
 const GoogleCloudStorage_1 = require("./GoogleCloudStorage");
+if (typeof process.env.PUBLICKEY !== 'string')
+    throw Error('The PUBLICKEY environment variable has not been set.');
+const storage = new GoogleCloudStorage_1.DataStorage({ publicKey: process.env.PUBLICKEY });
 const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, function* () {
-    (0, logger_1.log)("INPUT: " + JSON.stringify(input));
-    // ensure the PUBLICKEY environmental variable has been set
-    if (typeof process.env.PUBLICKEY !== 'string') {
-        (0, logger_1.log)('SETUP ERROR: The PUBLICKEY environmental variable has not been set');
-        callback(500, {
-            status: 'errored',
-            statusCode: 500,
-            error: {
-                name: 'Setup Error',
-                message: 'The PUBLICKEY environmental variable has not been set'
-            }
-        });
-        return;
-    }
     try {
         if (!StoredDataValidator_1.StoredDataValidator.isValidStoredData(input))
             throw Error('Input is invalid.');
     }
     catch (untypedError) {
         const error = untypedError;
-        (0, logger_1.log)(error.toString());
-        callback(500, {
+        Log_1.Log.error(error.toString());
+        callback(400, {
             status: 'errored',
-            statusCode: 500,
+            statusCode: 400,
             error: {
                 name: 'Validation Error',
                 message: 'Error validating input: ' + error.message
@@ -46,17 +35,16 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
         return;
     }
     // Future Plans: Use a a smart contract to see if the requester paid a set amount
-    // of LINK required to store stored data in the external adapter's database.
-    const storage = new GoogleCloudStorage_1.DataStorage({ publicKey: process.env.PUBLICKEY });
+    // of LINK required to store stored data in the external adapter's database
     try {
         yield storage.storeData(input);
     }
     catch (untypedError) {
         const error = untypedError;
-        (0, logger_1.log)(error.toString());
-        callback(500, {
+        Log_1.Log.error(error.toString());
+        callback(405, {
             status: 'errored',
-            statusCode: 500,
+            statusCode: 405,
             error: {
                 name: 'Data Storage Error',
                 message: error.message
@@ -64,7 +52,6 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
         });
         return;
     }
-    (0, logger_1.log)('SUCCESS');
     callback(200, {
         status: 'Success',
         statusCode: 200
@@ -83,19 +70,17 @@ exports.uploader = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         res.set('Access-Control-Allow-Headers', 'Content-Type');
         res.set('Access-Control-Max-Age', '3600');
         res.status(204).send('');
+        return;
     }
-    else {
-        for (const key in req.query) {
-            req.body[key] = req.query[key];
-        }
-        try {
-            yield (0, exports.createRequest)(req.body, (statusCode, data) => {
-                res.status(statusCode).send(data);
-            });
-        }
-        catch (untypedError) {
-            const error = untypedError;
-            (0, logger_1.log)('ERROR: ' + error.toString());
-        }
+    Log_1.Log.info('Input: ' + JSON.stringify(req.body));
+    try {
+        yield (0, exports.createRequest)(req.body, (statusCode, data) => {
+            Log_1.Log.info('Result: ' + statusCode.toString());
+            res.status(statusCode).send(data);
+        });
+    }
+    catch (untypedError) {
+        const error = untypedError;
+        Log_1.Log.error(error.toString());
     }
 });

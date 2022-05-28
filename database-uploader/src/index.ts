@@ -77,10 +77,10 @@ exports.uploader = async (req: Request, res: Response ) => {
     res.status(204).send('')
     return
   }
-  Log.info('Input\n' + JSON.stringify(req.body))
+  Log.info('Input: ' + JSON.stringify(req.body))
   try {
     await createRequest(req.body, (statusCode, data) => {
-      Log.info('Result\n' + statusCode.toString())
+      Log.info('Result: ' + statusCode.toString())
       res.status(statusCode).send(data)
     })
   } catch (untypedError) {

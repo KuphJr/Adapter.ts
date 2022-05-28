@@ -9,7 +9,7 @@ class Encryptor {
         const pemPublicKey = '-----BEGIN RSA PUBLIC KEY-----\n' + publicKey + '\n-----END RSA PUBLIC KEY-----\n';
         const decryptionKey = (0, crypto_1.randomBytes)(64);
         const encryptedDecryptionKey = (0, crypto_1.publicEncrypt)(pemPublicKey, decryptionKey).toString('base64');
-        const encryptedUserDataJsonString = crypto_js_1.AES.encrypt(JSON.stringify(validatedInput), decryptionKey.toString() + validatedInput.contractAddress + validatedInput.ref).toString();
+        const encryptedUserDataJsonString = crypto_js_1.AES.encrypt(JSON.stringify(validatedInput), decryptionKey.toString() + validatedInput.contractAddress.toLowerCase() + validatedInput.ref).toString();
         return {
             encryptedDecryptionKey: encryptedDecryptionKey,
             encryptedUserDataJsonString: encryptedUserDataJsonString

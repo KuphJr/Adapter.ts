@@ -1,3 +1,4 @@
+import process from 'process'
 import { publicEncrypt, privateDecrypt, randomBytes } from 'crypto'
 import { AES, enc } from 'crypto-js'
 
@@ -28,7 +29,7 @@ export class Encryptor {
     const encryptedDecryptionKey = publicEncrypt(pemPublicKey, decryptionKey).toString('base64')
     const encryptedUserDataJsonString = AES.encrypt(
       JSON.stringify(validatedInput),
-      decryptionKey.toString() + validatedInput.contractAddress + validatedInput.ref
+      decryptionKey.toString() + validatedInput.contractAddress.toLowerCase() + validatedInput.ref
     ).toString()
     return {
       encryptedDecryptionKey: encryptedDecryptionKey,

@@ -14,24 +14,25 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DataStorage = void 0;
 const path_1 = __importDefault(require("path"));
+const process_1 = __importDefault(require("process"));
 const fs_1 = __importDefault(require("fs"));
 const os_1 = __importDefault(require("os"));
 const storage_1 = require("@google-cloud/storage");
 const crypto_js_1 = require("crypto-js");
 const Encryptor_1 = require("./Encryptor");
 class DataStorage {
-    constructor({ publicKey = '', privateKey = '', keyFileName = 'key.json', bucketName = 'adapterjs-encrypted-user-data' }) {
+    constructor({ publicKey = '', privateKey = '', keyFileName = 'key.json', bucketName = 'adapterjs-playground' }) {
         this.publicKey = publicKey;
         this.privateKey = privateKey;
         this.storage = new storage_1.Storage({ keyFilename: keyFileName });
-        this.bucket = this.storage.bucket(bucketName);
+        this.bucket = this.storage.bucket(process_1.default.env.BUCKET || bucketName);
     }
     storeData(input) {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.publicKey === '')
                 throw new Error('Public key has not been provided.');
             const encryptedObj = Encryptor_1.Encryptor.encrypt(this.publicKey, input);
-            const filename = (0, crypto_js_1.SHA256)(input.contractAddress + input.ref).toString() + '.json';
+            const filename = (0, crypto_js_1.SHA256)(input.contractAddress.toLowerCase() + input.ref).toString() + '.json';
             const file = this.bucket.file(filename);
             const fileExists = yield file.exists();
             if (fileExists[0])

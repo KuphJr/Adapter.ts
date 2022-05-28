@@ -40,18 +40,11 @@ export class TimestampSignature {
 }
 
 const getRsaFromPubKey = (pubKeyB64: string): RSAKey => {
-  const pubKeyDecoded = b64tohex(pubKeyB64);
-  console.log(pubKeyDecoded)
-  console.log('LENGTH: ')
-  console.log(pubKeyDecoded.length)
+  const pubKeyDecoded = b64tohex(pubKeyB64)
   // jsrsasign cannot build key out of PEM or ASN.1 string, so we have to extract modulus and exponent
   // you can get some idea what happens from the link below (keep in mind that in JS every char is 2 bytes)
   // https://crypto.stackexchange.com/questions/18031/how-to-find-modulus-from-a-rsa-public-key/18034#18034
   const modulus = pubKeyDecoded.slice(16, pubKeyDecoded.length - 10)
-  console.log('MOD')
-  console.log(modulus)
-  const exp = pubKeyDecoded.slice(pubKeyDecoded.length - 5);
-  console.log('EXP')
-  console.log(parseInt(exp, 16))
-  return KEYUTIL.getKey({n: modulus, e: exp}) as RSAKey;
+  const exp = pubKeyDecoded.slice(pubKeyDecoded.length - 5)
+  return KEYUTIL.getKey({n: modulus, e: exp}) as RSAKey
 }

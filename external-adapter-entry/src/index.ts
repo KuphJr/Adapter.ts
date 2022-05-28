@@ -43,6 +43,7 @@ export const createRequest = async (
     })
     return
   }
+
   // 'vars' contains the variables that will be passed to the sandbox
   let vars: Variables = {}
   // 'javascriptString' is the code which will be executed by the sandbox
@@ -94,7 +95,7 @@ export const createRequest = async (
     return
   }
   try {
-    const result = await Sandbox.evaluate(validatedInput.nodeKey, validatedInput.type, javascriptString, vars)
+    const result = await Sandbox.evaluate(javascriptString, vars)
     callback(200, {
       jobRunId: validatedInput.id,
       result: result,
@@ -102,13 +103,15 @@ export const createRequest = async (
       status: 'ok'
     })
   } catch (untypedError) {
-    if ((untypedError as JavaScriptError).name === 'JavaScript Error') {
+    if (
+      (untypedError as JavaScriptError).name.includes('JavaScript Compilation Error') ||
+      (untypedError as JavaScriptError).name.includes('JavaScript Runtime Error')
+    ) {
       const error = untypedError as JavaScriptError
       callback(406, new JavaScriptError({
         jobRunID: validatedInput.id,
         name: error.name,
-        message: error.message,
-        details: error.details
+        message: error.message
       }).toJSONResponse())
     } else {
       const error = untypedError as Error

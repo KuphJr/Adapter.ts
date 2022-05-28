@@ -16,6 +16,7 @@ class Encryptor {
         };
     }
     static decrypt(privateKey, contractAddress, ref, encryptedObj) {
+        console.log(encryptedObj);
         const pemPrivateKey = '-----BEGIN RSA PRIVATE KEY-----\n' + privateKey + '\n-----END RSA PRIVATE KEY-----\n';
         const decryptionKey = (0, crypto_1.privateDecrypt)(pemPrivateKey, Buffer.from(encryptedObj.encryptedDecryptionKey, 'base64'));
         const decryptedUserDataHexString = crypto_js_1.AES.decrypt(encryptedObj.encryptedUserDataJsonString, decryptionKey.toString() + contractAddress + ref).toString();

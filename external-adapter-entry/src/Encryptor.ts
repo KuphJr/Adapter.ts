@@ -1,3 +1,4 @@
+import process from 'process'
 import { publicEncrypt, privateDecrypt, randomBytes } from 'crypto'
 import { AES, enc } from 'crypto-js'
 
@@ -42,6 +43,7 @@ export class Encryptor {
     ref: string,
     encryptedObj: EncryptedObject
   ): ValidStoredData {
+    console.log(encryptedObj)
     const pemPrivateKey = '-----BEGIN RSA PRIVATE KEY-----\n' + privateKey + '\n-----END RSA PRIVATE KEY-----\n'
     const decryptionKey = privateDecrypt(
       pemPrivateKey,

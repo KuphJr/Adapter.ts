@@ -7,12 +7,11 @@ import express from 'express'
 import bodyParser from 'body-parser'
 import cors from 'cors'
 import dotenv from 'dotenv'
+// load environmental variables from .env file
+dotenv.config({ path: path.join(__dirname, '..', '..', '.env')})
 
 import { createRequest, Result } from './index'
 import { Log } from './Log'
-
-// load environmental variables from .env file
-dotenv.config({ path: path.join(__dirname, '..', '..', '.env')})
 
 const app = express()
 const port = process.env.EA_PORT || 8031
@@ -29,10 +28,10 @@ app.options('*', (req, res) => {
 app.use(bodyParser.json())
 
 app.post('/', async (req: express.Request, res: express.Response) => {
-  Log.info('Input\n' + JSON.stringify(req.body))
+  Log.info('Input: ' + JSON.stringify(req.body))
   try {
     await createRequest(req.body, (status: number, result: Result) => {
-      Log.info('Result\n' + JSON.stringify(result))
+      Log.info('Result: ' + JSON.stringify(result))
       res.status(status).json(result)
     })
   } catch (untypedError) {

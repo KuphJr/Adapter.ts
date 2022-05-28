@@ -17,32 +17,37 @@ const axios_1 = __importDefault(require("axios"));
 const process_1 = __importDefault(require("process"));
 const Log_1 = require("./Log");
 const Validator_1 = require("./Validator");
+const crypto_js_1 = require("crypto-js");
 const TimestampSigner_1 = require("./TimestampSigner");
 if (!process_1.default.env.SANDBOXURL)
     throw Error('Setup Error: The SANDBOXURL environment variable has not been set.');
 if (!process_1.default.env.PRIVATEKEY)
     throw Error('Setup Error: The SANDBOXURL environment variable has not been set.');
-const timestampSignature = new TimestampSigner_1.TimestampSignature(process_1.default.env.PRIVATEKEY);
+const timestampSignature = new TimestampSigner_1.TimestampSignature(process_1.default.env.PRIVATEKEY, process_1.default.env.PUBLICKEY);
 class Sandbox {
-    static evaluate(nodeKey, type, javascriptString, vars) {
+    static evaluate(javascriptString, vars) {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             if (!process_1.default.env.SANDBOXURL)
                 throw Error('SANDBOXURL was not provided in environement variables.');
             const timestamp = Date.now();
             try {
+                const requestHash = (0, crypto_js_1.SHA256)(timestamp.toString() +
+                    javascriptString +
+                    vars ? JSON.stringify(vars) : '').toString();
+                const signature = timestampSignature.generateSignature(requestHash);
                 const { data } = yield axios_1.default.post(process_1.default.env.SANDBOXURL, {
                     timestamp,
-                    signature: timestampSignature.generateSignature(timestamp.toString()),
+                    signature,
                     js: javascriptString,
                     vars: vars
                 }, {
                     timeout: process_1.default.env.SANDBOXTIMEOUT ? parseInt(process_1.default.env.SANDBOXTIMEOUT) : 14000
                 });
-                return Validator_1.Validator.validateOutput(type, data.result);
+                return Validator_1.Validator.validateOutput(data.result);
             }
             catch (error) {
-                Log_1.Log.error(error);
+                Log_1.Log.debug('Sandbox error: ' + JSON.stringify(error));
                 if ((_b = (_a = error === null || error === void 0 ? void 0 : error.response) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.error) {
                     throw error.response.data.error;
                 }

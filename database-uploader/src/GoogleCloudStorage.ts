@@ -1,4 +1,5 @@
 import path from 'path'
+import process from 'process'
 import fs from 'fs'
 import os from 'os'
 import { Storage, Bucket } from '@google-cloud/storage';
@@ -18,19 +19,19 @@ export class DataStorage {
     publicKey = '',
     privateKey = '',
     keyFileName = 'key.json',
-    bucketName = 'adapterjs-encrypted-user-data'
+    bucketName = 'adapterjs-playground'
   }) {
       this.publicKey = publicKey
       this.privateKey = privateKey
       this.storage = new Storage({ keyFilename: keyFileName })
-      this.bucket = this.storage.bucket(bucketName)
+      this.bucket = this.storage.bucket(process.env.BUCKET || bucketName)
   }
 
   async storeData(input: ValidStoredData): Promise<void> {
     if (this.publicKey === '')
       throw new Error('Public key has not been provided.')
     const encryptedObj = Encryptor.encrypt(this.publicKey, input)
-    const filename = SHA256(input.contractAddress + input.ref).toString() + '.json'
+    const filename = SHA256(input.contractAddress.toLowerCase() + input.ref).toString() + '.json'
     const file = this.bucket.file(filename)
     const fileExists = await file.exists()
     if (fileExists[0])

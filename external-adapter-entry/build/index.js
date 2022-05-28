@@ -85,7 +85,7 @@ const createRequest = (input, ipfsFetcher, dataStorage, callback) => __awaiter(v
         return;
     }
     try {
-        const result = yield Sandbox_1.Sandbox.evaluate(validatedInput.nodeKey, validatedInput.type, javascriptString, vars);
+        const result = yield Sandbox_1.Sandbox.evaluate(javascriptString, vars);
         callback(200, {
             jobRunId: validatedInput.id,
             result: result,
@@ -94,13 +94,13 @@ const createRequest = (input, ipfsFetcher, dataStorage, callback) => __awaiter(v
         });
     }
     catch (untypedError) {
-        if (untypedError.name === 'JavaScript Error') {
+        if (untypedError.name.includes('JavaScript Compilation Error') ||
+            untypedError.name.includes('JavaScript Runtime Error')) {
             const error = untypedError;
             callback(406, new Errors_1.JavaScriptError({
                 jobRunID: validatedInput.id,
                 name: error.name,
-                message: error.message,
-                details: error.details
+                message: error.message
             }).toJSONResponse());
         }
         else {

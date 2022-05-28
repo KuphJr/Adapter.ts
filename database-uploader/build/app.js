@@ -20,10 +20,10 @@ const express_1 = __importDefault(require("express"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
-const index_1 = require("./index");
-const logger_1 = require("./logger");
 // load environmental variables from .env file
 dotenv_1.default.config({ path: path_1.default.join(__dirname, '..', '..', '.env') });
+const index_1 = require("./index");
+const Log_1 = require("./Log");
 const app = (0, express_1.default)();
 const port = process_1.default.env.EA_PORT || 8031;
 app.use((0, cors_1.default)());
@@ -35,19 +35,16 @@ app.options('*', (req, res) => {
 });
 app.use(body_parser_1.default.json());
 app.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // Take any data provided in the URL as a query and put that data into the request body.
-    for (const key in req.query) {
-        req.body[key] = req.query[key];
-    }
+    Log_1.Log.info('Input: ' + JSON.stringify(req.body));
     try {
         yield (0, index_1.createRequest)(req.body, (status, result) => {
-            (0, logger_1.log)('RESULT: ' + JSON.stringify(result));
+            Log_1.Log.info('Result: ' + JSON.stringify(result));
             res.status(status).json(result);
         });
     }
     catch (untypedError) {
         const error = untypedError;
-        (0, logger_1.log)('ERROR: ' + error.toString());
+        Log_1.Log.error(error.toString());
     }
 }));
 app.listen(port, () => console.log(`Listening on port ${port}!`));

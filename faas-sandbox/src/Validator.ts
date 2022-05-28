@@ -1,4 +1,12 @@
 import { utils } from "ethers"
+import { SHA256 } from 'crypto-js'
+import { TimestampSignature } from './TimestampSignature'
+
+if (!process.env.PUBLICKEY)
+  throw Error('The public key must be set using the environment variable PUBLICKEY.')
+const timestampSignature = new TimestampSignature('', process.env.PUBLICKEY)
+
+const latencyToleranceMs = process.env.TOLERANCE ? parseInt(process.env.TOLERANCE) : 1000
 
 export interface Variables {
   [variableName: string]: any
@@ -7,6 +15,12 @@ export interface Variables {
 export interface ValidRequest {
   js: string
   vars: Variables
+}
+
+interface AuthorizedValidRequest extends ValidRequest {
+  signature: string
+  requestHash: string
+  timestamp: number
 }
 
 type HexString = string
@@ -22,27 +36,45 @@ export class Validator {
       !Validator.isVariables((input as ValidRequest).vars)
     )
       throw Error("The parameter 'vars' must be provided as a JavaScript object and cannot be an array.")
+    Validator.checkRequestAuthorization(input as AuthorizedValidRequest)
     return true
   }
 
+  private static checkRequestAuthorization = (requestBody: AuthorizedValidRequest) => {
+    if (typeof requestBody.signature !== 'string')
+      throw Error('Signature is missing or invalid')
+    if (typeof requestBody.timestamp !== 'number')
+      throw Error('Timestamp is missing or invalid')
+    if (Math.abs(Date.now() - requestBody.timestamp) > latencyToleranceMs)
+      throw Error(`Timestamp out of sync. Current time: ${Date.now()} Received timestamp: ${requestBody.timestamp}`)
+    const requestHash = SHA256(
+      requestBody.timestamp.toString() +
+      requestBody.js +
+      requestBody.vars ? JSON.stringify(requestBody.vars) : ''
+    ).toString()
+    if(!timestampSignature.verifySignature(requestHash.toString(), requestBody.signature))
+      throw Error('The signature for the request is invalid')
+  }
+  
+
   static validateOutput = (output: unknown): HexString => {
     if (typeof output === 'string') {
-      if (output.length > 1024)
-        throw Error('The output returned by the JavaScript code is larger than 1 KB.')
-      return '0x' + Buffer.from(output).toString('hex')
+      if (output.length > 31)
+        throw Error(`The returned string ${output} cannot be represented in 32 bytes.`)
+      return utils.hexZeroPad('0x' + Buffer.from(output).toString('hex'), 32)
     }
     if (typeof output === 'bigint') {
       if (output > maxUint256 || output < maxNegInt256)
-        throw Error(`The output number ${output} cannot be represented in 32 bytes.`)
+        throw Error(`The returned number ${output} cannot be represented in 32 bytes.`)
       if (output >= 0) {
         return utils.hexZeroPad('0x' + output.toString(16), 32)
       }
       return Validator.negativeIntToBytes32HexString(output)
     }
     if (Buffer.isBuffer(output)) {
-      if (output.length > 1024)
-        throw Error('The output returned by the JavaScript code is larger than 1 KB.')
-      return output.toString('hex')
+      if (output.length > 32)
+        throw Error(`The returned buffer ${output} cannot be represented in 32 bytes.`)
+      return utils.hexZeroPad(output.toString('hex'), 32)
     }
     throw Error(`Invalid output type '${typeof output}' returned.`)
   }
