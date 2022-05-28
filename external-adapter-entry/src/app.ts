@@ -59,16 +59,16 @@ app.post('/', async (req: express.Request, res: express.Response) => {
   Log.info('Input\n' + JSON.stringify(req.body))
   // Check to make sure the request is authorized
   if (req.body.nodeKey !== process.env.NODEKEY) {
-    res.status(401).json({ error: 'The nodeKey parameter is missing invalid.' })
+    res.status(401).json({ error: 'The nodeKey parameter is missing or invalid.' })
     Log.error('The nodeKey parameter is missing invalid.')
     return
   }
   // validate if request is made by an authorized aggregator contract
-  if (req.body.meta?.oracleRequest?.requester?.toLowerCase() !== process.env.AGGREGATOR_CONTRACT_ADDR?.toLowerCase()) {
-    Log.error(`Requester ${req.body.meta?.oracleRequest?.requester?.toLowerCase()} does not match AGGREATOR_CONTRACT_ADDR environment variable ${process.env.AGGREGATOR_CONTRACT_ADDR?.toLowerCase()}`)
-    res.status(401).json({ error: `Requester ${req.body.meta?.oracleRequest?.requester?.toLowerCase()} does not match AGGREATOR_CONTRACT_ADDR environment variable ${process.env.AGGREGATOR_CONTRACT_ADDR?.toLowerCase()}` })
-    return
-  }
+  // if (req.body.meta?.oracleRequest?.requester?.toLowerCase() !== process.env.AGGREGATOR_CONTRACT_ADDR?.toLowerCase()) {
+  //   Log.error(`Requester ${req.body.meta?.oracleRequest?.requester?.toLowerCase()} does not match AGGREATOR_CONTRACT_ADDR environment variable ${process.env.AGGREGATOR_CONTRACT_ADDR?.toLowerCase()}`)
+  //   res.status(401).json({ error: `Requester ${req.body.meta?.oracleRequest?.requester?.toLowerCase()} does not match AGGREATOR_CONTRACT_ADDR environment variable ${process.env.AGGREGATOR_CONTRACT_ADDR?.toLowerCase()}` })
+  //   return
+  // }
   if (req.body.getUnhashedResponse) {
     if (typeof req.body.data.hash === 'string' && req.body.data.hash.length !== 64) {
       res.status(400).json({ error: "Invalid parameter for 'hashedResponse'" })

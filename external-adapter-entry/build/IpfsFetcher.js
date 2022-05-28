@@ -43,10 +43,13 @@ class IpfsFetcher {
             const archive = yield client.get(cid);
             if (!archive)
                 throw new Error(`Failed to fetch IPFS file with content ID ${cid}.`);
+            Log_1.Log.debug(`Attemping to get files from fetched IPFS archive.`);
             const files = yield archive.files();
             if (files.length !== 1)
                 throw new Error(`Invalid IPFS archive retrieved. It must be a single JavaScript file.`);
+            Log_1.Log.debug(`Attemping to read the text from the fetched IPFS file.`);
             const javascriptString = yield files[0].text();
+            Log_1.Log.debug(`Attemping to cache the IPFS file.`);
             fs_1.default.writeFileSync(filepath, javascriptString, { encoding: 'utf8' });
             return javascriptString;
         });

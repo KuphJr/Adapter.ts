@@ -35,10 +35,10 @@ app.options('*', (req, res) => {
 });
 app.use(body_parser_1.default.json());
 app.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    Log_1.Log.info('Input\n' + JSON.stringify(req.body));
+    Log_1.Log.info('Input: ' + JSON.stringify(req.body));
     try {
         yield (0, index_1.createRequest)(req.body, (status, result) => {
-            Log_1.Log.info('Result\n' + JSON.stringify(result));
+            Log_1.Log.info('Result: ' + JSON.stringify(result));
             res.status(status).json(result);
         });
     }

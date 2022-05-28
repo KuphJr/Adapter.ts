@@ -30,10 +30,13 @@ export class IpfsFetcher {
     const archive = await client.get(cid)
     if (!archive)
       throw new Error(`Failed to fetch IPFS file with content ID ${cid}.`)
+    Log.debug(`Attemping to get files from fetched IPFS archive.`)
     const files = await archive.files()
     if (files.length !== 1)
       throw new Error(`Invalid IPFS archive retrieved. It must be a single JavaScript file.`)
+    Log.debug(`Attemping to read the text from the fetched IPFS file.`)
     const javascriptString = await files[0].text()
+    Log.debug(`Attemping to cache the IPFS file.`)
     fs.writeFileSync(filepath, javascriptString, { encoding: 'utf8' })
     return javascriptString
   }

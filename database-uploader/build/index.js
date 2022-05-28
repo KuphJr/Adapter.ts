@@ -72,10 +72,10 @@ exports.uploader = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         res.status(204).send('');
         return;
     }
-    Log_1.Log.info('Input\n' + JSON.stringify(req.body));
+    Log_1.Log.info('Input: ' + JSON.stringify(req.body));
     try {
         yield (0, exports.createRequest)(req.body, (statusCode, data) => {
-            Log_1.Log.info('Result\n' + statusCode.toString());
+            Log_1.Log.info('Result: ' + statusCode.toString());
             res.status(statusCode).send(data);
         });
     }

@@ -42,7 +42,10 @@ class Validator {
         if (input.data.ref) {
             if (typeof input.data.ref !== 'string')
                 throw Error("Invalid value for the parameter 'ref' which must be a string");
-            validatedInput.ref = input.data.ref;
+            if (input.data.ref.indexOf('\u0000') !== -1)
+                validatedInput.ref = input.data.ref.slice(0, input.data.ref.indexOf('\u0000'));
+            else
+                validatedInput.ref = input.data.ref;
             if (typeof input.data.req !== 'string')
                 throw Error("Invalid value for the 'req' parameter which must be a valid address.");
             validatedInput.contractAddress = input.data.req.toLowerCase();
