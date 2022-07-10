@@ -22,8 +22,6 @@ if (!process.env.PRIVATEKEY)
   throw Error('Setup Error: The PRIVATEKEY environment variable has not been set.')
 if (!process.env.WEB3STORAGETOKEN)
   throw Error('Setup Error: The WEB3STORAGETOKEN environment variable has not been set.')
-if (!process.env.AGGREGATOR_CONTRACT_ADDR)
-  throw Error('Setup Error: The AGGREGATOR_CONTRACT_ADDR environment variable has not been set.')
 
 const dataStorage = new DataStorage(process.env.PRIVATEKEY)
 const ipfsFetcher = new IpfsFetcher(process.env.WEB3STORAGETOKEN)
@@ -57,31 +55,28 @@ app.post('/', async (req: express.Request, res: express.Response) => {
     return
   }
   Log.info('Input\n' + JSON.stringify(req.body))
-  // Check to make sure the request is authorized
+  // Check to make sure the request has been sent from the core Chainlink node
   if (req.body.nodeKey !== process.env.NODEKEY) {
     res.status(401).json({ error: 'The nodeKey parameter is missing or invalid.' })
     Log.error('The nodeKey parameter is missing invalid.')
     return
   }
-  // validate if request is made by an authorized aggregator contract
-  // if (req.body.meta?.oracleRequest?.requester?.toLowerCase() !== process.env.AGGREGATOR_CONTRACT_ADDR?.toLowerCase()) {
-  //   Log.error(`Requester ${req.body.meta?.oracleRequest?.requester?.toLowerCase()} does not match AGGREATOR_CONTRACT_ADDR environment variable ${process.env.AGGREGATOR_CONTRACT_ADDR?.toLowerCase()}`)
-  //   res.status(401).json({ error: `Requester ${req.body.meta?.oracleRequest?.requester?.toLowerCase()} does not match AGGREATOR_CONTRACT_ADDR environment variable ${process.env.AGGREGATOR_CONTRACT_ADDR?.toLowerCase()}` })
-  //   return
-  // }
   if (req.body.getUnhashedResponse) {
-    if (typeof req.body.data.hash === 'string' && req.body.data.hash.length !== 64) {
+    if (typeof req.body.data.hash !== 'string' ||
+      (typeof req.body.data.hash === 'string' && req.body.data.hash.length !== 64)
+    ) {
       res.status(400).json({ error: "Invalid parameter for 'hashedResponse'" })
       return
-    }  
-    if (!cachedResponses['0x' + req.body.data.hash]) {
-      Log.error(`No value found for the provided hash: ${'0x' + req.body.data.hash}`)
-      res.status(400).json({ error: `No value found for the provided hash: ${'0x' + req.body.data.hash}` })
+    }
+    req.body.data.hash = '0x' + req.body.data.hash
+    if (!cachedResponses[req.body.data.hash]) {
+      Log.error(`No value found for the provided hash: ${req.body.data.hash}`)
+      res.status(400).json({ error: `No value found for the provided hash: ${req.body.data.hash}` })
       return
     }
-    Log.debug(`found cached response ${cachedResponses['0x' + req.body.data.hash]}`)
-    const [ response, salt ] = cachedResponses['0x' + req.body.data.hash]
-    delete cachedResponses['0x' + req.body.data.hash]
+    Log.debug(`found cached response ${cachedResponses[req.body.data.hash]}`)
+    const [ response, salt ] = cachedResponses[req.body.data.hash]
+    delete cachedResponses[req.body.data.hash]
     const reply = {
       jobRunId: req.body.id,
       result: response,

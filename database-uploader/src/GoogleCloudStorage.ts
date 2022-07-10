@@ -48,6 +48,7 @@ export class DataStorage {
     const localfile = path.join(os.tmpdir(), filename)
     try {
       try {
+        // TODO: Add local caching of private variables to prevent overuse of Google Cloud Storage
         await this.bucket.file(filename).download({ destination: localfile })
       } catch (untypedError) {
         const error = untypedError as Error

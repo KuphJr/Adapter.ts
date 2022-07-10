@@ -2,7 +2,7 @@ import { utils } from "ethers"
 import { SHA256 } from 'crypto-js'
 import { TimestampSignature } from './TimestampSignature'
 
-if (!process.env.PUBLICKEY)
+if (!process.env.PUBLICKEY && !(process.env.DISABLE_SIGNATURE_CHECK?.toLowerCase() === 'true'))
   throw Error('The public key must be set using the environment variable PUBLICKEY.')
 const timestampSignature = new TimestampSignature('', process.env.PUBLICKEY)
 
@@ -36,7 +36,8 @@ export class Validator {
       !Validator.isVariables((input as ValidRequest).vars)
     )
       throw Error("The parameter 'vars' must be provided as a JavaScript object and cannot be an array.")
-    Validator.checkRequestAuthorization(input as AuthorizedValidRequest)
+    if (process.env.DISABLE_SIGNATURE_CHECK?.toLowerCase() !== 'true')
+      Validator.checkRequestAuthorization(input as AuthorizedValidRequest)
     return true
   }
 
@@ -61,7 +62,7 @@ export class Validator {
     if (typeof output === 'string') {
       if (output.length > 31)
         throw Error(`The returned string ${output} cannot be represented in 32 bytes.`)
-      return utils.hexZeroPad('0x' + Buffer.from(output).toString('hex'), 32)
+      return utils.formatBytes32String(output)
     }
     if (typeof output === 'bigint') {
       if (output > maxUint256 || output < maxNegInt256)
@@ -92,7 +93,6 @@ export class Validator {
         break
       }
     }
-
     const hexCode: Record<string, string> = {
       '0000': '0',
       '0001': '1',
@@ -111,7 +111,6 @@ export class Validator {
       '1110': 'e',
       '1111': 'f'
     }
-
     let hexString = '0x'
     for (let i = 0; i + 3 < 256; i+=4)
       hexString += hexCode[twosComplementArr.slice(i, i+4).join('')]

@@ -1,21 +1,24 @@
 "use strict";
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Validator = void 0;
 const ethers_1 = require("ethers");
 const crypto_js_1 = require("crypto-js");
 const TimestampSignature_1 = require("./TimestampSignature");
-if (!process.env.PUBLICKEY)
+if (!process.env.PUBLICKEY && !(((_a = process.env.DISABLE_SIGNATURE_CHECK) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === 'true'))
     throw Error('The public key must be set using the environment variable PUBLICKEY.');
 const timestampSignature = new TimestampSignature_1.TimestampSignature('', process.env.PUBLICKEY);
 const latencyToleranceMs = process.env.TOLERANCE ? parseInt(process.env.TOLERANCE) : 1000;
 class Validator {
     static isValidInput(input) {
+        var _a;
         if (typeof input.js !== 'string')
             throw Error("The parameter 'js' must be provided as a string.");
         if (input.vars &&
             !Validator.isVariables(input.vars))
             throw Error("The parameter 'vars' must be provided as a JavaScript object and cannot be an array.");
-        Validator.checkRequestAuthorization(input);
+        if (((_a = process.env.DISABLE_SIGNATURE_CHECK) === null || _a === void 0 ? void 0 : _a.toLowerCase()) !== 'true')
+            Validator.checkRequestAuthorization(input);
         return true;
     }
 }
@@ -37,7 +40,7 @@ Validator.validateOutput = (output) => {
     if (typeof output === 'string') {
         if (output.length > 31)
             throw Error(`The returned string ${output} cannot be represented in 32 bytes.`);
-        return ethers_1.utils.hexZeroPad('0x' + Buffer.from(output).toString('hex'), 32);
+        return ethers_1.utils.formatBytes32String(output);
     }
     if (typeof output === 'bigint') {
         if (output > maxUint256 || output < maxNegInt256)

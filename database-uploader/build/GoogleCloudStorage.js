@@ -48,6 +48,7 @@ class DataStorage {
             const localfile = path_1.default.join(os_1.default.tmpdir(), filename);
             try {
                 try {
+                    // TODO: Add local caching of private variables to prevent overuse of Google Cloud Storage
                     yield this.bucket.file(filename).download({ destination: localfile });
                 }
                 catch (untypedError) {

@@ -14,6 +14,7 @@ export class Sandbox {
       console: 'off',
       sandbox: vars,
       require: {
+        external: ['axios'],
         builtin: ['assert', 'buffer', 'crypto', 'dgram', 'dns', 'events', 'http', 'https', 'net', 'querystring', 'readline', 'stream', 'string_decoder', 'timers', 'tls', 'tty', 'url', 'util']
       }
     })

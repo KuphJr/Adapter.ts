@@ -39,8 +39,9 @@ export const createRequest = async (
     )
     return
   }
-  // Future Plans: Use a a smart contract to see if the requester paid a set amount
-  // of LINK required to store stored data in the external adapter's database
+  // TODO: Use a a smart contract to see if the requester paid a set amount
+  // of LINK required to store stored data in the external adapter's database.
+  // This will discourage spam as well as provide an additional revenue stream for node operators.
   try {
     await storage.storeData(input)
   } catch (untypedError) {

@@ -45,7 +45,6 @@ exports.sandbox = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 // Process request
 const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     // Validate the request
     try {
         if (!Validator_1.Validator.isValidInput(input))
@@ -76,7 +75,7 @@ const createRequest = (input, callback) => __awaiter(void 0, void 0, void 0, fun
         return;
     }
     Log.debug('Sandbox Output\n');
-    Log.debug(((_a = output) === null || _a === void 0 ? void 0 : _a.toString()) || '');
+    Log.debug((output === null || output === void 0 ? void 0 : output.toString()) || '');
     // Validate the type of the returned value
     let validatedOutput;
     try {
