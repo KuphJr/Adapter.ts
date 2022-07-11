@@ -56,27 +56,25 @@ app.post('/', async (req: express.Request, res: express.Response) => {
   }
   Log.info('Input\n' + JSON.stringify(req.body))
   // Check to make sure the request has been sent from the core Chainlink node
-  if (req.body.nodeKey !== process.env.NODEKEY) {
+  if (req?.body?.nodeKey !== process.env.NODEKEY) {
     res.status(401).json({ error: 'The nodeKey parameter is missing or invalid.' })
     Log.error('The nodeKey parameter is missing invalid.')
     return
   }
-  if (req.body.getUnhashedResponse) {
-    if (typeof req.body.data.hash !== 'string' ||
-      (typeof req.body.data.hash === 'string' && req.body.data.hash.length !== 64)
-    ) {
-      res.status(400).json({ error: "Invalid parameter for 'hashedResponse'" })
+  if (req?.body?.getUnhashedResponse) {
+    if (typeof req?.body?.meta?.oracleRequest?.requestId !== 'string') {
+      Log.error(`Invalid requestId: ${typeof req?.body?.meta?.oracleRequest?.requestId}`)
+      res.status(400).json({ error: `Invalid requestId: ${typeof req?.body?.meta?.oracleRequest?.requestId}` })
       return
     }
-    req.body.data.hash = '0x' + req.body.data.hash
-    if (!cachedResponses[req.body.data.hash]) {
-      Log.error(`No value found for the provided hash: ${req.body.data.hash}`)
-      res.status(400).json({ error: `No value found for the provided hash: ${req.body.data.hash}` })
+    if (!cachedResponses[req.body.meta.oracleRequest.requestId]) {
+      Log.error(`No value found for the requestId: ${req.body.meta.oracleRequest.requestId}`)
+      res.status(400).json({ error: `No value found for the provided requestId: ${req.body.meta.oracleRequest.requestId}` })
       return
     }
-    Log.debug(`found cached response ${cachedResponses[req.body.data.hash]}`)
-    const [ response, salt ] = cachedResponses[req.body.data.hash]
-    delete cachedResponses[req.body.data.hash]
+    Log.debug(`found cached response ${cachedResponses[req.body.meta.oracleRequest.requestId]}`)
+    const [ response, salt ] = cachedResponses[req.body.meta.oracleRequest.requestId]
+    delete cachedResponses[req.body.meta.oracleRequest.requestId]
     const reply = {
       jobRunId: req.body.id,
       result: response,
@@ -93,13 +91,16 @@ app.post('/', async (req: express.Request, res: express.Response) => {
       (status: number, result: Result) => {
         const salt = BigInt(randomInt(0, 281474976710655))
         if (result.result) {
+          const answerPlusSalt = BigInt('0b' + (BigInt(result.result) + salt).toString(2).slice(-256))
+          const fullHashedAnswer = utils.keccak256(
+            utils.hexZeroPad('0x' + answerPlusSalt.toString(16), 32)
+          )
+          const last8Bytes = utils.hexZeroPad('0x' + BigInt('0b' + BigInt(fullHashedAnswer).toString(2).slice(-64)).toString(16), 8)
+          const hashedResponse = last8Bytes
           Log.debug('Response / 2: ' + BigInt(result.result) / BigInt(2))
           Log.debug('Salt: ' + salt.toString(16))
           Log.debug('Response & Salt Before Hashing: ' + (BigInt(result.result) / BigInt(2) + salt).toString(16))
-          const hashedResponse = utils.keccak256(
-            utils.hexZeroPad('0x' + (BigInt(result.result) / BigInt(2) + salt).toString(16), 32)
-          )
-          cachedResponses[hashedResponse] = [ result.result, salt ]
+          cachedResponses[ req.body.meta.oracleRequest.requestId ] = [ result.result, salt ]
           Log.debug('Hashed Response: ' + hashedResponse)
           result.result = hashedResponse
         }

@@ -48,7 +48,7 @@ const createRequest = (input, ipfsFetcher, dataStorage, callback) => __awaiter(v
             Log_1.Log.error(error.toString());
             callback(500, new Errors_1.AdapterError({
                 jobRunID: validatedInput.id,
-                message: `Storage Error: ${error.message}`
+                message: `Storage Error! Please ensure the correct contract address and ref are used: ${error.message}`
             }).toJSONResponse());
             return;
         }

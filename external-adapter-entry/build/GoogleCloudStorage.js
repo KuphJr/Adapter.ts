@@ -38,13 +38,16 @@ class DataStorage {
             projectId: process_1.default.env.GCS_PROJECT_ID,
             credentials: {
                 client_email: process_1.default.env.GCS_CLIENT_EMAIL,
-                private_key: process_1.default.env.GCS_PRIVATE_KEY.replace(/\\n/g, '\n')
+                private_key: '-----BEGIN PRIVATE KEY-----\n' + process_1.default.env.GCS_PRIVATE_KEY.replace(/\\n/g, '\n') + '\n-----END PRIVATE KEY-----\n'
             }
         });
         this.bucket = this.storage.bucket(bucketName);
     }
     retrieveData(contractAddress, ref) {
         return __awaiter(this, void 0, void 0, function* () {
+            Log_1.Log.debug('Contract address for generating private vars hash: ' + contractAddress);
+            Log_1.Log.debug('Ref for generating private vars hash: ' + ref);
+            Log_1.Log.debug('Filehash: ' + (0, crypto_js_1.SHA256)(contractAddress + ref).toString());
             const filename = (0, crypto_js_1.SHA256)(contractAddress + ref).toString() + '.json';
             const filepath = path_1.default.join(this.persistantStorageDir, filename);
             Log_1.Log.debug('Attemping to fetch from local data storage caching directory: ' + filepath);

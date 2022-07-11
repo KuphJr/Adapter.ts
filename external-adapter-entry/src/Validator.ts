@@ -3,13 +3,11 @@ import { utils } from 'ethers'
 interface UnvalidatedInput {
   id?: string
   data?: {
-    type?: string
     js?: string
     cid?: string
     vars?: string
     ref?: string
     req?: string
-    contractAddress?: string
   }
   meta?: {
     oracleRequest?: {
@@ -19,7 +17,6 @@ interface UnvalidatedInput {
 }
 
 export interface ValidInput {
-  cached?: boolean
   id?: string
   js?: string
   cid?: string
@@ -46,9 +43,7 @@ export class Validator {
     const validatedInput: ValidInput = {}
 
     // validate id
-    if (!input.id)
-      input.id = '1'
-    else if (typeof input.id !== 'string')
+    if (typeof input.id !== 'string')
       throw Error("Invalid value for the parameter 'id' which must be a string.")
     validatedInput.id = input.id
 
@@ -78,17 +73,25 @@ export class Validator {
       validatedInput.vars = input.data.vars
     }
 
+    // get the address of the requester
+    if (typeof input.data.req !== 'string')
+      throw Error('Invalid value for req, which must be a string.')
+    try {
+      validatedInput.contractAddress = utils.getAddress(input.data.req).toLowerCase()
+    } catch {
+      validatedInput.contractAddress = '0x' + Buffer.from(input.data.req, 'base64').toString('hex').toLowerCase()
+    }
+
     // validate ref
     if (input.data.ref) {
       if (typeof input.data.ref !== 'string')
         throw Error("Invalid value for the parameter 'ref' which must be a string")
-      if (input.data.ref.indexOf('\u0000') !== -1)
-        validatedInput.ref = input.data.ref.slice(0, input.data.ref.indexOf('\u0000'))
-      else
-        validatedInput.ref = input.data.ref
+      // if (input.data.ref.indexOf('\u0000') !== -1)
+      //   validatedInput.ref = input.data.ref.slice(0, input.data.ref.indexOf('\u0000'))
+      //else
+      validatedInput.ref = input.data.ref
       if (typeof input.data.req !== 'string')
         throw Error("Invalid value for the 'req' parameter which must be a valid address.")
-      validatedInput.contractAddress = input.data.req.toLowerCase()
     }
 
     // validate that js, cid or ref is present

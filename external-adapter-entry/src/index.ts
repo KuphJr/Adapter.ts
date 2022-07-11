@@ -59,7 +59,7 @@ export const createRequest = async (
       Log.error(error.toString())
       callback(500, new AdapterError({
         jobRunID: validatedInput.id,
-        message: `Storage Error: ${error.message}`
+        message: `Storage Error! Please ensure the correct contract address and ref are used: ${error.message}`
       }).toJSONResponse())
       return
     }

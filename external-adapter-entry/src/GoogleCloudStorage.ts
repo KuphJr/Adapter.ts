@@ -32,13 +32,16 @@ export class DataStorage {
       projectId: process.env.GCS_PROJECT_ID,
       credentials: {
         client_email: process.env.GCS_CLIENT_EMAIL,
-        private_key: process.env.GCS_PRIVATE_KEY.replace(/\\n/g, '\n')
+        private_key: '-----BEGIN PRIVATE KEY-----\n' + process.env.GCS_PRIVATE_KEY.replace(/\\n/g, '\n') + '\n-----END PRIVATE KEY-----\n'
       }
     })
     this.bucket = this.storage.bucket(bucketName)
   }
 
   async retrieveData(contractAddress: string, ref: string): Promise<ValidStoredData> {
+    Log.debug('Contract address for generating private vars hash: ' + contractAddress)
+    Log.debug('Ref for generating private vars hash: ' + ref)
+    Log.debug('Filehash: ' + SHA256(contractAddress + ref).toString())
     const filename = SHA256(contractAddress + ref).toString() + '.json'
     const filepath = path.join(this.persistantStorageDir, filename)
     Log.debug('Attemping to fetch from local data storage caching directory: ' + filepath)
