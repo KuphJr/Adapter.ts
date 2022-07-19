@@ -75,7 +75,7 @@ export class Validator {
     if (Buffer.isBuffer(output)) {
       if (output.length > 32)
         throw Error(`The returned buffer ${output} cannot be represented in 32 bytes.`)
-      return utils.hexZeroPad(output.toString('hex'), 32)
+      return utils.hexZeroPad('0x' + output.toString('hex'), 32)
     }
     throw Error(`Invalid output type '${typeof output}' returned.`)
   }

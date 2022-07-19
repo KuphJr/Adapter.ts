@@ -53,7 +53,7 @@ Validator.validateOutput = (output) => {
     if (Buffer.isBuffer(output)) {
         if (output.length > 32)
             throw Error(`The returned buffer ${output} cannot be represented in 32 bytes.`);
-        return ethers_1.utils.hexZeroPad(output.toString('hex'), 32);
+        return ethers_1.utils.hexZeroPad('0x' + output.toString('hex'), 32);
     }
     throw Error(`Invalid output type '${typeof output}' returned.`);
 };
